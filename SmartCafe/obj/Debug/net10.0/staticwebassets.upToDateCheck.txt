@@ -19,3 +19,6 @@ wwwroot\images\user\23f767ff-d998-4c1b-a823-6cc959c87123.jpg
 wwwroot\images\user\71e43486-a7eb-46fa-9cd3-040bc2bffb40.jpg
 wwwroot\images\user\a27a1dd2-218a-4f9e-ac1e-1667e4ab73ce.jpg
 wwwroot\images\user\ad4a5159-143a-4442-84e9-ee3ee725de6e.jpg
+wwwroot\images\user\f7facae7-bfcf-43c9-878a-6fb45981d978.jpg
+wwwroot\images\user\c2015ca8-723d-419d-aa51-e13944e670d6.jpg
+wwwroot\images\user\6f99f50f-b1ad-47d0-9010-986cc7fb4684.jpg

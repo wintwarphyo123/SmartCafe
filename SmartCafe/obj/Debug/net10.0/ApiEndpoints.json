@@ -1,5 +1,33 @@
 [
   {
+    "ContainingType": "SmartCafe.Controllers.AuthController",
+    "Method": "Login",
+    "RelativePath": "api/Auth/login",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "info",
+        "Type": "SmartCafe.Models.LoginInfo",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [],
+    "Summary": "Login"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.AuthController",
+    "Method": "UserProfile",
+    "RelativePath": "api/Auth/profile",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [],
+    "Summary": "get user profile"
+  },
+  {
     "ContainingType": "SmartCafe.Controllers.CategoryController",
     "Method": "GetCategories",
     "RelativePath": "api/Category",
@@ -84,6 +112,17 @@
     "Summary": "Delete Category By id"
   },
   {
+    "ContainingType": "SmartCafe.Controllers.DashboardController",
+    "Method": "DashboardSummary",
+    "RelativePath": "api/Dashboard/Summary",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [],
+    "Summary": "Dashboard Summary"
+  },
+  {
     "ContainingType": "SmartCafe.Controllers.MenuController",
     "Method": "GetMenuData",
     "RelativePath": "api/Menu",
@@ -166,6 +205,17 @@
     ],
     "ReturnTypes": [],
     "Summary": "Delete menu Data"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.MenuController",
+    "Method": "GetAllOptionGroups",
+    "RelativePath": "api/Menu/all-option-groups",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [],
+    "Summary": "Get All Option Groups for Dropdown Master List"
   },
   {
     "ContainingType": "SmartCafe.Controllers.MenuController",

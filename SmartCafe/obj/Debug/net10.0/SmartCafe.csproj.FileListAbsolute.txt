@@ -166,3 +166,4 @@ C:\Users\acer\source\repos\SmartCafe\SmartCafe\bin\Debug\net10.0\SixLabors.Image
 C:\Users\acer\source\repos\SmartCafe\SmartCafe\bin\Debug\net10.0\SmartCafe.staticwebassets.runtime.json
 C:\Users\acer\source\repos\SmartCafe\SmartCafe\bin\Debug\net10.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 C:\Users\acer\source\repos\SmartCafe\SmartCafe\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt
+C:\Users\acer\source\repos\SmartCafe\SmartCafe\obj\Debug\net10.0\SmartCafe.sourcelink.json

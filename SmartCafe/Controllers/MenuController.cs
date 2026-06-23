@@ -20,7 +20,7 @@ namespace SmartCafe.Controllers
         public async Task<IActionResult> GetMenuData()
         {
             var menuList = await context.Menus
-                .Where(m=>m.DeletedAt==null && m.IsAvailable==true)
+                .Where(m=>m.DeletedAt==null)
                 .Select(m => new ResponseDtos.AllMenu()
                 {
                     Id = m.MenuId,
@@ -30,7 +30,7 @@ namespace SmartCafe.Controllers
                     Price =m.Price,
                     Is_available=m.IsAvailable,
                     CategoryId = m.CategoryId,
-                    CategoryName=m.Category !=null ? m.Category.CategoryName:"No Category"
+                    CategoryName=m.Category !=null ? m.Category.CategoryName:"No Category" 
                     
                 }).ToListAsync();
             if(!menuList.Any())
@@ -165,6 +165,31 @@ namespace SmartCafe.Controllers
             }
         }
 
+        [HttpGet("all-option-groups")]
+        [EndpointSummary("Get All Option Groups for Dropdown Master List")]
+        public async Task<IActionResult> GetAllOptionGroups()
+        {
+            
+            var optionGroups = await context.OptionGroups
+                .Where(og => og.DeletedAt == null) 
+                .Select(og => new OptionGroupDto
+                {
+                    GroupId = og.Id,
+                    GroupName = og.GroupName,
+                    OptionItems = context.OptionItems
+                        .Where(oi => oi.OptionGroupId == og.Id)
+                        .Select(oi => new OptionItemDto
+                        {
+                            ItemId = oi.Id,
+                            ItemName = oi.ItemName,
+                            ExtraPrice = oi.ExtraPrice
+                        }).ToList()
+                }).ToListAsync();
+
+            return Ok(new DefaultResponseModel { Success = true, Data = optionGroups });
+        }
+
+
         [HttpGet("detail/{id}")]
         [EndpointSummary("Get Menu Detail")]
         public async Task<IActionResult> GetMenuDetail(int id)
@@ -208,7 +233,7 @@ namespace SmartCafe.Controllers
             return Ok(new DefaultResponseModel { Success = true, Data = result });
         }
 
-        
+
 
         [HttpPost]
         [EndpointSummary("Create new Menu")]
@@ -217,14 +242,14 @@ namespace SmartCafe.Controllers
             Menu menuData = new()
             {
                 MenuName = menuDto.MenuName,
-                Description= menuDto.Description,
-                CategoryId= menuDto.CategoryId,
+                Description = menuDto.Description,
+                CategoryId = menuDto.CategoryId,
                 Price = menuDto.Price,
-                IsAvailable=true,
-                CreatedAt= DateTime.UtcNow,
+                IsAvailable = true,
+                CreatedAt = DateTime.UtcNow,
             };
             context.Menus.Add(menuData);
-            bool isSaved=await context.SaveChangesAsync()>0;
+            bool isSaved = await context.SaveChangesAsync() > 0;
             if (isSaved)
             {
                 if (!string.IsNullOrEmpty(menuDto.MenuImage))
@@ -287,16 +312,15 @@ namespace SmartCafe.Controllers
                 }
             }
 
-                return BadRequest(new DefaultResponseModel()
-                {
-                    Success = false,
-                    Statuscode = StatusCodes.Status400BadRequest,
-                    Message = "Menu creation failed",
-                    Data = null
-                });
-            }
-            
+            return BadRequest(new DefaultResponseModel()
+            {
+                Success = false,
+                Statuscode = StatusCodes.Status400BadRequest,
+                Message = "Menu creation failed",
+                Data = null
+            });
         
+        }
 
         //for MenuOptionGroup tale , join_table
         [HttpPost("link-option-group")]
@@ -315,66 +339,31 @@ namespace SmartCafe.Controllers
                     Data = null
                 });
             }
-
-            // 2. Check if the Option Group exists and is not soft-deleted
-            bool hasOptionGroup = await context.OptionGroups.AnyAsync(og => og.Id == dto.OptionGroupId && og.DeletedAt == null);
-            if (!hasOptionGroup)
+            var alreadyLink = await context.ProductOptionGroups
+                .Where(pod => pod.MenuId == dto.MenuId).ToListAsync();
+            if (alreadyLink.Any())
             {
-                return NotFound(new DefaultResponseModel()
-                {
-                    Success = false,
-                    Statuscode = StatusCodes.Status404NotFound,
-                    Message = "Option Group does not exist",
-                    Data = null
-                });
+                context.ProductOptionGroups.RemoveRange(alreadyLink);
             }
-
-            // 3. Check if this specific link already exists to avoid composite primary key duplication errors
-            bool alreadyLinked = await context.ProductOptionGroups
-                .AnyAsync(pog => pog.MenuId == dto.MenuId && pog.OptionGroupId == dto.OptionGroupId);
-
-            if (alreadyLinked)
+            if(dto.OptionGroupIds != null && dto.OptionGroupIds.Any())
             {
-                return BadRequest(new DefaultResponseModel()
+                var newLink = dto.OptionGroupIds.Select(id => new ProductOptionGroup
                 {
-                    Success = false,
-                    Statuscode = StatusCodes.Status400BadRequest,
-                    Message = "This Option Group is already linked to this product",
-                    Data = null
-                });
+                    MenuId = dto.MenuId,
+                    OptionGroupId = id,
+                    CreatedAt = DateTime.UtcNow
+                }).ToList();
+                await context.ProductOptionGroups.AddRangeAsync(newLink);
             }
+            await context.SaveChangesAsync();
 
-            // 4. Create the mapping row
-            var productOptionGroupData = new ProductOptionGroup()
+            return Ok(new DefaultResponseModel()
             {
-                MenuId = dto.MenuId,
-                OptionGroupId = dto.OptionGroupId,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            await context.ProductOptionGroups.AddAsync(productOptionGroupData);
-            bool isSaved = await context.SaveChangesAsync() > 0;
-
-            if (isSaved)
-            {
-                return StatusCode(StatusCodes.Status201Created, new DefaultResponseModel()
-                {
-                    Success = true,
-                    Statuscode = StatusCodes.Status201Created,
-                    Message = "Option Group successfully linked to the product",
-                    Data = new { dto.MenuId, dto.OptionGroupId }
-                });
-            }
-            else
-            {
-                return BadRequest(new DefaultResponseModel()
-                {
-                    Success = false,
-                    Statuscode = StatusCodes.Status400BadRequest,
-                    Message = "Failed to link Option Group to the product",
-                    Data = null
-                });
-            }
+                Success = true,
+                Statuscode = StatusCodes.Status200OK,
+                Message = "Successfully",
+                Data = dto
+            });
         }
         //to join Menu and Option_Group table
 

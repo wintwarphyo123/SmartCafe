@@ -11,7 +11,7 @@ namespace SmartCafe.Services
         IConfiguration config,
         UserManager<IdentityUser> userManager) : IJwtService
     {
-        public async Task<String> GenerateToke(IdentityUser user)
+        public async Task<String> GenerateToken(IdentityUser user)
         {
             var roles = await userManager.GetRolesAsync(user);
             List<Claim> claims = [

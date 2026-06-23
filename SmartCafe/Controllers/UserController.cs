@@ -67,12 +67,6 @@ namespace SmartCafe.Controllers
             }
         }
 
-        //[HttpPost]
-        //[EndpointSummary("Create Role")]
-        //public async Task<IActionResult> CreateRole()
-        //{
-
-        //}
 
         [HttpPost]
         [EndpointSummary("Create User")]
@@ -82,14 +76,26 @@ namespace SmartCafe.Controllers
             {
                 return BadRequest("Role Name is required");
             }
-            if(string.IsNullOrEmpty(model.UserName) || string.IsNullOrEmpty(model.Password))
+            //string to enum
+            if (!Enum.TryParse<RoleStatus>(model.Role, true, out var parsedRole))
+            {
+                return BadRequest(new DefaultResponseModel()
+                {
+                    Success = false,
+                    Statuscode = StatusCodes.Status400BadRequest,
+                    Message = "Invalid Role! Only 'Admin' or 'KitchenStaff' are allowed.",
+                    Data = null
+                });
+            }
+            if (string.IsNullOrEmpty(model.UserName) || string.IsNullOrEmpty(model.Password))
             {
                 return BadRequest("Invalid Input");
             }
-            if(!await roleManager.RoleExistsAsync(model.Role))
+            //enum to string
+            string finalizedRoleName = parsedRole.ToString();
+            if (!await roleManager.RoleExistsAsync(finalizedRoleName))
             {
-                await roleManager.CreateAsync(
-                    new IdentityRole(model.Role));
+                await roleManager.CreateAsync(new IdentityRole(finalizedRoleName));
             }
             IdentityUser user = new()
             {
@@ -110,7 +116,7 @@ namespace SmartCafe.Controllers
             }
 
             IdentityResult setRole =
-                await userManager.AddToRoleAsync(user, model.Role);
+                await userManager.AddToRoleAsync(user, finalizedRoleName);
 
             if (!setRole.Succeeded)
             {
@@ -120,7 +126,7 @@ namespace SmartCafe.Controllers
             {
                 UserId = user.Id,
                 UserName = model.UserName,
-                Role = model.Role,
+                Role = finalizedRoleName,
                 JoinDate = DateOnly.FromDateTime(DateTime.Now),
                 //ProfileImage=model.ProfileImage,
                 Status = true

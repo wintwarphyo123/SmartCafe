@@ -41,7 +41,7 @@ namespace SmartCafe.DTOs
         public class RequestMenuOptionGroupDto()
         {
             public int MenuId {  get; set; } = 0;
-            public int OptionGroupId {  set; get; }= 0;
+            public List<int> OptionGroupIds { get; set; }=new();
         }
         
         public class OrderRequest()

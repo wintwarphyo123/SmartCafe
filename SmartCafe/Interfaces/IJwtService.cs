@@ -4,6 +4,6 @@ namespace SmartCafe.Interfaces
 {
     public interface IJwtService
     {
-        Task<String> GenerateToke(IdentityUser user);
+        Task<String> GenerateToken(IdentityUser user);
     }
 }

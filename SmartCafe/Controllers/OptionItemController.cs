@@ -22,7 +22,8 @@ namespace SmartCafe.Controllers
                     Id = i.Id,
                     ItemName = i.ItemName,
                     ExtraPrice = i.ExtraPrice,
-                    OptionGroupId = i.OptionGroupId
+                    OptionGroupId = i.OptionGroupId,
+                    GroupName=i.OptionGroup.GroupName?? "No Category"
                 }).ToListAsync();
             if (!ItemList.Any())
             {

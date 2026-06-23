@@ -21,7 +21,7 @@ namespace SmartCafe.Controllers
         public async Task<IActionResult> GetCategories()
         {
             var categoryList=await context.Categories
-                .Where(c=>c.DeletedAt==null && c.IsActive==true)
+                .Where(c=>c.DeletedAt==null)
                 .Select(c=> new ResponseDtos.AllCategories()
                 {
                     Id=c.CategoryId,

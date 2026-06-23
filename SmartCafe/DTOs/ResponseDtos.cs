@@ -37,6 +37,7 @@ namespace SmartCafe.DTOs
             public string? ItemName {  get; set; }
             public decimal? ExtraPrice {  get; set; }
             public int? OptionGroupId {  get; set; }
+            public string? GroupName { get; set; }
         }
 
         public class MenuDetailResponseDto
@@ -82,6 +83,16 @@ namespace SmartCafe.DTOs
             public int Quantity { get; set; }
             public decimal PriceAtOrder { get; set; }
             public string SelectedOptionsJson { get; set; } = null!;
+        }
+
+        public class SummaryDashboardDto
+        {
+            public int TotalMenu {  get; set; }
+            public int TotalCategory { get; set; }
+            public int TotalStaff { get; set; }
+            public int TotalOptionGroup { get; set; }
+            public int TotalOptionItem { get; set; }
+
         }
     }
 }
