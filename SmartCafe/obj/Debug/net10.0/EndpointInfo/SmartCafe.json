@@ -482,6 +482,34 @@
         }
       }
     },
+    "/api/Menu/{menuId}/Available": {
+      "put": {
+        "tags": [
+          "Menu"
+        ],
+        "summary": "Change Menu Status",
+        "parameters": [
+          {
+            "name": "menuId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/OptionGroup": {
       "get": {
         "tags": [
@@ -803,12 +831,12 @@
         }
       }
     },
-    "/api/Order/admin/filter": {
+    "/api/Order/filter": {
       "get": {
         "tags": [
           "Order"
         ],
-        "summary": "Admin function to filter orders by Date, Status, or TableNumber",
+        "summary": "to filter orders by Date, Status",
         "parameters": [
           {
             "name": "startDate",
@@ -1149,10 +1177,7 @@
       "OrderRequest": {
         "type": "object",
         "properties": {
-          "tableNo": {
-            "type": "string"
-          },
-          "note": {
+          "phoneNumber": {
             "type": [
               "null",
               "string"

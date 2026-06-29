@@ -100,8 +100,8 @@ public partial class SmartCafeDbContext : DbContext
         {
             entity.HasKey(e => e.OrderId).HasName("PK__Orders__C3905BCFF0574BA3");
 
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
-            entity.Property(e => e.OrderStatus).HasDefaultValue("Pending");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())", "DF__Orders__CreatedA__72C60C4A");
+            entity.Property(e => e.OrderStatus).HasDefaultValue("Pending", "DF__Orders__OrderSta__71D1E811");
         });
 
         modelBuilder.Entity<OrderItem>(entity =>

@@ -208,6 +208,23 @@
   },
   {
     "ContainingType": "SmartCafe.Controllers.MenuController",
+    "Method": "ChangeStatus",
+    "RelativePath": "api/Menu/{menuId}/Available",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "menuId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [],
+    "Summary": "Change Menu Status"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.MenuController",
     "Method": "GetAllOptionGroups",
     "RelativePath": "api/Menu/all-option-groups",
     "HttpMethod": "GET",
@@ -500,8 +517,25 @@
   },
   {
     "ContainingType": "SmartCafe.Controllers.OrderController",
+    "Method": "ConfirmPayment",
+    "RelativePath": "api/Order/confirmPayment",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "SmartCafe.DTOs.RequestDtos\u002BConfirmPaymentRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [],
+    "Summary": "Confirm payment"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.OrderController",
     "Method": "FilterOrders",
-    "RelativePath": "api/Order/admin/filter",
+    "RelativePath": "api/Order/filter",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -528,24 +562,7 @@
       }
     ],
     "ReturnTypes": [],
-    "Summary": "Admin function to filter orders by Date, Status, or TableNumber"
-  },
-  {
-    "ContainingType": "SmartCafe.Controllers.OrderController",
-    "Method": "ConfirmPayment",
-    "RelativePath": "api/Order/confirmPayment",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "request",
-        "Type": "SmartCafe.DTOs.RequestDtos\u002BConfirmPaymentRequest",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [],
-    "Summary": "Confirm payment"
+    "Summary": "to filter orders by Date, Status"
   },
   {
     "ContainingType": "SmartCafe.Controllers.OrderController",

@@ -194,7 +194,6 @@ namespace SmartCafe.Controllers
         [EndpointSummary("Get Menu Detail")]
         public async Task<IActionResult> GetMenuDetail(int id)
         {
-            // ၁။ Include နှင့် ThenInclude ကို သုံးပြီး Multi-level Data များကို ဆွဲထုတ်ခြင်း
             var menu = await context.Menus
                 .Include(m => m.ProductOptionGroups) 
                     .ThenInclude(mog => mog.OptionGroup) 
@@ -213,7 +212,7 @@ namespace SmartCafe.Controllers
                 Price = menu.Price,
                 Description = menu.Description,
 
-                OptionGroups = menu.ProductOptionGroups// .OrderBy(mog => mog)
+                OptionGroups = menu.ProductOptionGroups
                     .Select(mog => new OptionGroupDto
                     {
                         GroupId = mog.OptionGroup!.Id,
@@ -447,7 +446,37 @@ namespace SmartCafe.Controllers
             }
 
         }
-        
+
+        [HttpPut("{menuId}/Available")]
+        [EndpointSummary("Change Menu Status")]
+        public async Task<IActionResult> ChangeStatus(int menuId)
+        {
+            var menuData=await context.Menus.FirstOrDefaultAsync(m=>m.MenuId== menuId);
+            if (menuData == null)
+            {
+                return BadRequest(new DefaultResponseModel()
+                {
+                    Success = false,
+                    Statuscode=StatusCodes.Status400BadRequest,
+                    Message="Data not exist",
+                    Data=null
+                });
+            }
+            else
+            {
+                menuData.IsAvailable = !menuData.IsAvailable;
+                context.Menus.Update(menuData);
+                await context.SaveChangesAsync();
+                return Ok(new DefaultResponseModel()
+                {
+                    Success = true,
+                    Statuscode = StatusCodes.Status200OK,
+                    Message = "Menu is not available",
+                    Data = menuData
+                });
+            }
+        }
+
 
         [HttpDelete("{id}")]
         [EndpointSummary("Delete menu Data")]

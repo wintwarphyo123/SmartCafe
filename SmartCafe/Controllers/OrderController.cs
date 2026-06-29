@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SmartCafe.Data;
 using SmartCafe.DTOs;
-using SmartCafe.Models;
 using SmartCafe.Entities;
+using SmartCafe.Models;
+using System.Text.Json;
 
 namespace SmartCafe.Controllers
 {
@@ -49,6 +51,7 @@ namespace SmartCafe.Controllers
             {
                 var order = await context.Orders
                     .Include(o => o.OrderItems)
+                    .ThenInclude(item=>item.Menu)
                     .FirstOrDefaultAsync(o => o.OrderId == id);
 
                 if (order == null)
@@ -61,13 +64,55 @@ namespace SmartCafe.Controllers
                         Data = null
                     });
                 }
+                var responseDto = new ResponseDtos.OrderResponseDto
+                {
+                    OrderId = order.OrderId,
+                    OrderNumber = order.OrderNumber,
+                    TotalAmount = order.TotalAmount,
+                    PhoneNumber=order.PhoneNumber,
+                    OrderStatus = order.OrderStatus,
+                    Note = order.Note,
+                    CreatedAt = order.CreatedAt,
+
+                    OrderItems = order.OrderItems.Select(item => {
+
+                        var optionIds = string.IsNullOrWhiteSpace(item.SelectedOptionsJson)
+                            ? new List<int>()
+                            : item.SelectedOptionsJson.Contains("[")
+                                ? new List<int>() // If it's a JSON array layout, handle or skip
+                                : item.SelectedOptionsJson.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                    .Select(int.Parse).ToList();
+
+                        return new ResponseDtos.OrderItemResponseDto
+                        {
+                            OrderItemId = item.OrderItemId,
+                            MenuId = item.MenuId,
+
+                            
+                            MenuName = context.Menus.FirstOrDefault(m => m.MenuId == item.MenuId)?.MenuName ?? "Unknown Item",
+                            Quantity = item.Quantity,
+                            PriceAtOrder = item.PriceAtOrder,
+
+                            
+                            SelectedOptions = context.OptionItems
+                                .Include(oi => oi.OptionGroup)
+                                .Where(oi => optionIds.Contains(oi.Id))
+                                .Select(oi => new ResponseDtos.SelectedOptionDto
+                                {
+                                    OptionGroupName = oi.OptionGroup!.GroupName,
+                                    OptionItemName = oi.ItemName,
+                                    ExtraPrice = oi.ExtraPrice
+                                }).ToList()
+                        };
+                    }).ToList()
+                };
 
                 return Ok(new DefaultResponseModel()
                 {
                     Success = true,
                     Statuscode = StatusCodes.Status200OK,
                     Message = "Order detail retrieved successfully",
-                    Data = order
+                    Data = responseDto
                 });
             }
             catch (Exception ex)
@@ -101,15 +146,14 @@ namespace SmartCafe.Controllers
                     Data = orderList
                 });
             }
-
             var orderData = orderList.Select(order => new ResponseDtos.OrderResponseDto
             {
                 OrderId = order.OrderId,
                 OrderNumber = order.OrderNumber,
-                TableNumber = order.TableNumber,
                 TotalAmount = order.TotalAmount,
                 OrderStatus = order.OrderStatus.ToString(),
                 Note = order.Note,
+                PhoneNumber=order.PhoneNumber,
                 CreatedAt = order.CreatedAt,
                 OrderItems = order.OrderItems.Select(item => new ResponseDtos.OrderItemResponseDto
                 {
@@ -117,7 +161,7 @@ namespace SmartCafe.Controllers
                     MenuId = item.MenuId,
                     Quantity = item.Quantity,
                     PriceAtOrder = item.PriceAtOrder,
-                    SelectedOptionsJson = item.SelectedOptionsJson
+                    SelectedOptions = new List<ResponseDtos.SelectedOptionDto>()
                 }).ToList()
 
             }).ToList();
@@ -130,9 +174,9 @@ namespace SmartCafe.Controllers
                 Data = orderData
             });
         }
-        //filter order data
-        [HttpGet("admin/filter")]
-        [EndpointSummary("Admin function to filter orders by Date, Status, or TableNumber")]
+        
+        [HttpGet("filter")]
+        [EndpointSummary("to filter orders by Date, Status")]
         public async Task<IActionResult> FilterOrders(
                                      [FromQuery] DateTime? startDate,
                                      [FromQuery] DateTime? endDate,
@@ -170,11 +214,6 @@ namespace SmartCafe.Controllers
                     }
                 }
 
-                if (!string.IsNullOrEmpty(tableNumber))
-                {
-                    query = query.Where(o => o.TableNumber == tableNumber);
-                }
-
                 var filteredOrders = await query.OrderByDescending(o => o.CreatedAt).ToListAsync();
 
                 
@@ -182,10 +221,10 @@ namespace SmartCafe.Controllers
                 {
                     OrderId = order.OrderId,
                     OrderNumber = order.OrderNumber,
-                    TableNumber = order.TableNumber,
                     TotalAmount = order.TotalAmount,
                     OrderStatus = order.OrderStatus.ToString(),
                     Note = order.Note,
+                    PhoneNumber=order.PhoneNumber,
                     CreatedAt = order.CreatedAt,
                     OrderItems = order.OrderItems.Select(item => new ResponseDtos.OrderItemResponseDto
                     {
@@ -193,7 +232,7 @@ namespace SmartCafe.Controllers
                         MenuId = item.MenuId,
                         Quantity = item.Quantity,
                         PriceAtOrder = item.PriceAtOrder,
-                        SelectedOptionsJson = item.SelectedOptionsJson
+                        SelectedOptions = new List<ResponseDtos.SelectedOptionDto>()
                     }).ToList()
                 }).ToList();
 
@@ -223,10 +262,21 @@ namespace SmartCafe.Controllers
             try 
             { 
             await context.Database.BeginTransactionAsync();
+            if(string.IsNullOrWhiteSpace(orderDto.PhoneNumber))
+                {
+                    return BadRequest(new DefaultResponseModel()
+                    {
+                        Success=false,
+                        Statuscode=StatusCodes.Status400BadRequest,
+                        Message="Phone Number is required",
+                        Data=null
+                    });
+                }
             List<OrderItem> orderList = new List<OrderItem>();//for store order Items that ordered
             decimal totalAmout = 0;
-
+            
             //to check that the oredered menu is exist or not
+          
             foreach (var item in orderDto.Items)
             {
                 var itemList = await context.Menus
@@ -242,15 +292,18 @@ namespace SmartCafe.Controllers
                     });
                 }
                 decimal singleItemPrice = (decimal)itemList.Price;
-                foreach (var optionItem in item.OptionItemSelectedIds)//option items
-                {
-                    var optionData = await context.OptionItems
-                        .FirstOrDefaultAsync(o => o.Id == optionItem);
-                    if (optionData != null)
+                    if(item.OptionItemSelectedIds != null)
                     {
-                        singleItemPrice += optionData.ExtraPrice;
+                        foreach (var optionItem in item.OptionItemSelectedIds)//option items
+                        {
+                            var optionData = await context.OptionItems
+                                .FirstOrDefaultAsync(o => o.Id == optionItem);
+                            if (optionData != null)
+                            {
+                                singleItemPrice += optionData.ExtraPrice;
+                            }
+                        }
                     }
-                }
                 totalAmout += (singleItemPrice * item.Quantity);
                 var orderItem = new OrderItem()
                 {
@@ -261,17 +314,15 @@ namespace SmartCafe.Controllers
                 };
                 orderList.Add(orderItem);
             }
+                var orderData = new Order()
+                {
 
-
-            var orderData = new Order()
-            {
-                TableNumber = orderDto.TableNo,
-                OrderNumber = "ORD-" + DateTime.Now.ToString("yyyyMMddHHmmss"),
-
-                TotalAmount = totalAmout,
-                CreatedAt = DateTime.UtcNow,
-                OrderStatus=OrderStatus.Pending.ToString()
-            };
+                    OrderNumber = "ORD-" + DateTime.Now.ToString("yyyyMMddHHmmss"),
+                    PhoneNumber = orderDto.PhoneNumber,
+                    TotalAmount = totalAmout,
+                    CreatedAt = DateTime.UtcNow,
+                    OrderStatus = OrderStatus.Pending.ToString()
+                };
             await context.Orders.AddAsync(orderData);
             await context.SaveChangesAsync();
 
@@ -282,19 +333,35 @@ namespace SmartCafe.Controllers
             }
             await context.OrderItems.AddRangeAsync(orderList);
             await context.SaveChangesAsync();
-
-            await context.Database.CurrentTransaction.CommitAsync();
-            return Ok(new DefaultResponseModel()
+                
+                await context.Database.CurrentTransaction.CommitAsync();
+                var responseDto = new ResponseDtos.OrderResponseDto
+                {
+                    OrderId = orderData.OrderId,
+                    OrderNumber = orderData.OrderNumber,
+                    TotalAmount = orderData.TotalAmount,
+                    OrderStatus = orderData.OrderStatus,
+                    PhoneNumber=orderData.PhoneNumber,
+                    CreatedAt = orderData.CreatedAt,
+                    OrderItems = orderList.Select(item => new ResponseDtos.OrderItemResponseDto
+                    {
+                        OrderItemId = item.OrderItemId,
+                        MenuId = item.MenuId,
+                        Quantity = item.Quantity,
+                        PriceAtOrder = item.PriceAtOrder,
+                        SelectedOptions=new List<ResponseDtos.SelectedOptionDto>()
+                }).ToList()
+                };
+                return Ok(new DefaultResponseModel()
             {
                 Success = true,
                 Statuscode = StatusCodes.Status200OK,
                 Message = "Placed order complete",
-                Data = orderData
+                Data = responseDto
             });
         }
             catch (Exception ex)
         {
-                //  လမ်းခုလတ်မှာ Error တက်ရင် အကုန်ပြန်ဖျက်မယ်
                 await context.Database.CurrentTransaction.RollbackAsync();
                 var innerMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
                 //await transaction.RollbackAsync();

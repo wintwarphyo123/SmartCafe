@@ -62,14 +62,14 @@ namespace SmartCafe.DTOs
             public string ItemName { get; set; } = null!;
             public decimal ExtraPrice { get; set; }
         }
-
+        
         public class OrderResponseDto
         {
             public int OrderId { get; set; }
             public string OrderNumber { get; set; }= null!;
-            public string TableNumber { get; set; }=null!;
             public decimal TotalAmount { get; set; }
             public string OrderStatus { get; set; } = null!;
+            public string PhoneNumber { get; set; } = null!;
             public string? Note { get; set; }
             public DateTime CreatedAt { get; set; }
 
@@ -80,9 +80,17 @@ namespace SmartCafe.DTOs
         {
             public int OrderItemId { get; set; }
             public int MenuId { get; set; }
+            public string MenuName { get; set; }=null!;
             public int Quantity { get; set; }
             public decimal PriceAtOrder { get; set; }
-            public string SelectedOptionsJson { get; set; } = null!;
+            public List<SelectedOptionDto> SelectedOptions { get; set; } = new();
+        }
+
+        public class SelectedOptionDto
+        {
+            public string OptionGroupName { get; set; } = null!; 
+            public string OptionItemName { get; set; } = null!;  
+            public decimal ExtraPrice { get; set; }            
         }
 
         public class SummaryDashboardDto

@@ -24,7 +24,6 @@ namespace SmartCafe.Controllers
         public async Task<IActionResult> GetInfo()
         {
             var userInfos = await context.UserInfos
-                .Where(u => u.Status == true)
                 .ToListAsync();
 
 
