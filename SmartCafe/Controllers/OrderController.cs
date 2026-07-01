@@ -1,26 +1,34 @@
-﻿using Microsoft.AspNetCore.Http.Json;
+﻿
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SmartCafe.Data;
 using SmartCafe.DTOs;
 using SmartCafe.Entities;
 using SmartCafe.Models;
-using System.Text.Json;
+using SmartCafe.Services;
+using System.Linq.Dynamic.Core;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace SmartCafe.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class OrderController(SmartCafeDbContext context):ControllerBase
+    public class OrderController(SmartCafeDbContext context,
+        ExportService exportService) :ControllerBase
     {
 
         [HttpGet]
         [EndpointSummary("Get All Orders")]
-        public async Task<IActionResult> GetAllOrders()
+        public async Task<IActionResult> GetAllOrders([FromQuery] string status = "All")
         {
             try
             {
-                var orders = await context.Orders
+                var query = context.Orders.AsQueryable();
+                if (!string.Equals(status, "All", StringComparison.OrdinalIgnoreCase))
+                {
+                    query = query.Where(o => o.OrderStatus == status);
+                }
+                var orders = await query
                     .OrderByDescending(o => o.CreatedAt)
                     .ToListAsync();
 
@@ -254,6 +262,40 @@ namespace SmartCafe.Controllers
                 });
             }
         }
+        //remain
+        [HttpPost("excel")]
+        [EndpointSummary("export excel")]
+        [EndpointDescription("order report")]
+        [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
+        [ProducesResponseType(typeof(FileResult), StatusCodes.Status200OK)]
+        public async Task<IActionResult> PostExcelAsync(string? q, string? sortfield,
+            int order, [FromBody] KeyValuePair<string, string>[] columns)
+        {
+            IQueryable<Order> orders = OrderQuery(q, sortfield, order);
+            DateTime today = DateTime.Today;
+            DateTime tomorrow = today.AddDays(1);
+            orders = orders.Where(p => p.CreatedAt >= today && p.CreatedAt < tomorrow);
+            List<Order> records = await orders.ToListAsync();
+
+            if (records.Count == 0)
+            {
+                return BadRequest(new DefaultResponseModel()
+                {
+                    Message = "Failed to report excel"
+                });
+            }
+            Stream? stream = exportService.ExportToExcelStreamSpecificColumns(records, columns, "Position List");
+            if (stream == null)
+            {
+                return BadRequest(new DefaultResponseModel()
+                {
+                    Message = "Failed to report excel"
+                });
+            }
+            return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "Positions List.xlsx");
+        }
+        //....
 
         [HttpPost]
         [EndpointSummary("Create Order")]
@@ -477,6 +519,33 @@ namespace SmartCafe.Controllers
                 Message = "order is ready",
                 Data = orderData
             });
+        }
+
+        [NonAction]
+        private IQueryable<Order> OrderQuery(string? q, string? sortField, int order)
+        {
+            IQueryable<Order> query = context.Orders.AsQueryable();
+
+
+            // Sorting
+            if (!string.IsNullOrEmpty(sortField))
+            {
+                query = query.OrderBy($"{sortField} {(order > 0 ? "ascending" : "descending")}");
+            }
+
+            // Filtering
+
+            if (!string.IsNullOrEmpty(q))
+            {
+                q = q.ToLower();
+
+                query = query.Where(
+                    x => x.OrderId.ToString()!.Contains(q) ||
+                    (x.OrderNumber ?? string.Empty).Contains(q));
+
+            }
+
+            return query;
         }
     }
 }

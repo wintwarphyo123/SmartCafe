@@ -112,6 +112,40 @@
     "Summary": "Delete Category By id"
   },
   {
+    "ContainingType": "SmartCafe.Controllers.CategoryController",
+    "Method": "UpdateStatus",
+    "RelativePath": "api/Category/{id}/update-status",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [],
+    "Summary": "UpdateStatus"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.DashboardController",
+    "Method": "GetRevenue",
+    "RelativePath": "api/Dashboard/Revenue_Overview",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "period",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [],
+    "Summary": "Get Revenue Overview"
+  },
+  {
     "ContainingType": "SmartCafe.Controllers.DashboardController",
     "Method": "DashboardSummary",
     "RelativePath": "api/Dashboard/Summary",
@@ -121,6 +155,33 @@
     "Parameters": [],
     "ReturnTypes": [],
     "Summary": "Dashboard Summary"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.DashboardController",
+    "Method": "GetTrendingItem",
+    "RelativePath": "api/Dashboard/trending_item",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "limit",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[SmartCafe.DTOs.ResponseDtos\u002BTrendingItemResponseModel, SmartCafe, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ],
+    "Summary": "Get trending items"
   },
   {
     "ContainingType": "SmartCafe.Controllers.MenuController",
@@ -222,6 +283,17 @@
     ],
     "ReturnTypes": [],
     "Summary": "Change Menu Status"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.MenuController",
+    "Method": "GetAllCategories",
+    "RelativePath": "api/Menu/all_categories",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [],
+    "Summary": "Get all categories"
   },
   {
     "ContainingType": "SmartCafe.Controllers.MenuController",
@@ -443,7 +515,13 @@
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [],
+    "Parameters": [
+      {
+        "Name": "status",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
     "ReturnTypes": [],
     "Summary": "Get All Orders"
   },
@@ -531,6 +609,47 @@
     ],
     "ReturnTypes": [],
     "Summary": "Confirm payment"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.OrderController",
+    "Method": "PostExcelAsync",
+    "RelativePath": "api/Order/excel",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "q",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "sortfield",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "order",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "columns",
+        "Type": "System.Collections.Generic.KeyValuePair\u00602[[System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]][]",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.FileResult",
+        "MediaTypes": [
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        ],
+        "StatusCode": 200
+      }
+    ],
+    "Description": "order report",
+    "Summary": "export excel"
   },
   {
     "ContainingType": "SmartCafe.Controllers.OrderController",
@@ -641,6 +760,23 @@
     ],
     "ReturnTypes": [],
     "Summary": "Delete User"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.UserController",
+    "Method": "UpdateStatus",
+    "RelativePath": "api/User/{id}/update-status",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [],
+    "Summary": "update status"
   },
   {
     "ContainingType": "SmartCafe.Controllers.WeatherForecastController",

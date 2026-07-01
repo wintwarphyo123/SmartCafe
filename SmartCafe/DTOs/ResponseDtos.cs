@@ -24,6 +24,11 @@ namespace SmartCafe.DTOs
             public int? CategoryId {  get; set; }
             public string? CategoryName {  get; set; }
         }
+        public class AllCategoryForDropDown()
+        {
+            public int CategoriesId { get; set; }
+            public string? CategoriesName { get; set; }
+        }
 
         public class ResponseOptionGroup()
         {
@@ -98,9 +103,18 @@ namespace SmartCafe.DTOs
             public int TotalMenu {  get; set; }
             public int TotalCategory { get; set; }
             public int TotalStaff { get; set; }
-            public int TotalOptionGroup { get; set; }
-            public int TotalOptionItem { get; set; }
+            public decimal TotalRevenue { get; set; }
+            public int TotalOrders { get; set; }
 
+        }
+
+        public class TrendingItemResponseModel
+        {
+            public int MenuId { get; set; }
+            public string MenuName{ get; set; }=null!;
+            public string CategoryName { get; set; } = null!;
+            public int TotalSales { get; set; }
+            public double Percentage { get; set; }
         }
     }
 }

@@ -125,6 +125,27 @@ namespace SmartCafe.Controllers
             }
         }
 
+        [HttpGet("all_categories")]
+        [EndpointSummary("Get all categories")]
+        public async Task<IActionResult> GetAllCategories()
+        {
+            var categoryList = await context.Categories
+                .Where(c => c.DeletedAt == null)
+                .Select(c=>new AllCategoryForDropDown
+                {
+                    CategoriesId=c.CategoryId,
+                    CategoriesName=c.CategoryName,
+                })
+                .ToListAsync();
+            return Ok(new DefaultResponseModel()
+            {
+                Success = true,
+                Statuscode=StatusCodes.Status200OK,
+                Message="All categories",
+                Data=categoryList
+            });
+        }
+
         [HttpGet("search/{MenuName}")]
         [EndpointSummary("Get Menu by name")]
         public async Task<IActionResult> GetByName(string MenuName)
@@ -471,7 +492,7 @@ namespace SmartCafe.Controllers
                 {
                     Success = true,
                     Statuscode = StatusCodes.Status200OK,
-                    Message = "Menu is not available",
+                    Message = "Menu data status is changed",
                     Data = menuData
                 });
             }
@@ -494,6 +515,7 @@ namespace SmartCafe.Controllers
                 });
             }
             menuData.DeletedAt=DateTime.UtcNow;
+            menuData.IsAvailable = false;
             context.Menus.Update(menuData);
             return await context.SaveChangesAsync() > 0
                 ? StatusCode(StatusCodes.Status201Created, new DefaultResponseModel()

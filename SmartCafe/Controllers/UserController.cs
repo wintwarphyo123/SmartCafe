@@ -278,6 +278,36 @@ namespace SmartCafe.Controllers
             }
         }
 
+        [HttpPut("{id}/update-status")]
+        [EndpointSummary("update status")]
+        public async Task<IActionResult> UpdateStatus(string id)
+        {
+            var userData = await context.UserInfos.FirstOrDefaultAsync(u => u.UserId == id);
+            if (userData == null)
+            {
+                return BadRequest(new DefaultResponseModel()
+                {
+                    Success = false,
+                    Statuscode = StatusCodes.Status400BadRequest,
+                    Message = "Data is missed",
+                    Data = null
+                });
+            }
+            else
+            {
+                userData.Status = !userData.Status;
+                context.UserInfos.Update(userData);
+                await context.SaveChangesAsync();
+                return Ok(new DefaultResponseModel()
+                {
+                    Success = true,
+                    Statuscode = StatusCodes.Status200OK,
+                    Message = "Data status change successfully",
+                    Data = userData
+                });
+            }
+        }
+
         [HttpDelete("{id}")]
         [EndpointSummary("Delete User")]
         public async Task<IActionResult> DeleteUser(string id)

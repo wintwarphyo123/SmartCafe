@@ -242,6 +242,37 @@ namespace SmartCafe.Controllers
             }
         }
 
+        [HttpPut("{id}/update-status")]
+        [EndpointSummary("UpdateStatus")]
+        public async Task<IActionResult> UpdateStatus(int id)
+        {
+            var categoryData = await context.Categories
+                .FirstOrDefaultAsync(c => c.CategoryId == id);
+            if (categoryData == null)
+            {
+                return BadRequest(new DefaultResponseModel()
+                {
+                    Success = false,
+                    Statuscode = StatusCodes.Status400BadRequest,
+                    Message = "Data is missed",
+                    Data = null
+                });
+            }
+            else
+            {
+                categoryData.IsActive = !categoryData.IsActive;
+                context.Categories.Update(categoryData);
+                await context.SaveChangesAsync();
+                return Ok(new DefaultResponseModel()
+                {
+                    Success = true,
+                    Statuscode = StatusCodes.Status200OK,
+                    Message = "Status change successfully",
+                    Data = categoryData
+                });
+            }
+        }
+
         [HttpDelete("{id}")]
         [EndpointSummary("Delete Category By id")]
         public async Task<IActionResult> DeleteCategory(int id)
@@ -260,7 +291,6 @@ namespace SmartCafe.Controllers
             }
 
             categoryData.DeletedAt= DateTime.UtcNow;
-            categoryData.IsActive = false;
             context.Categories.Update(categoryData) ;
             return await context.SaveChangesAsync() > 0
                 ? StatusCode(StatusCodes.Status201Created, new DefaultResponseModel()
