@@ -4,7 +4,6 @@ using SmartCafe.Data;
 using SmartCafe.DTOs;
 using SmartCafe.Models;
 using SmartCafe.Entities;
-using Microsoft.OpenApi;
 
 namespace SmartCafe.Controllers
 {

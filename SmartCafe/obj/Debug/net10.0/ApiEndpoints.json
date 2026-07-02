@@ -143,7 +143,7 @@
       }
     ],
     "ReturnTypes": [],
-    "Summary": "Get Revenue Overview"
+    "Summary": "Get Revenue Overview for Day, Month, and Year"
   },
   {
     "ContainingType": "SmartCafe.Controllers.DashboardController",
@@ -619,6 +619,16 @@
     "Order": 0,
     "Parameters": [
       {
+        "Name": "startDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "endDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
         "Name": "q",
         "Type": "System.String",
         "IsRequired": false
@@ -667,16 +677,6 @@
       {
         "Name": "endDate",
         "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
-        "IsRequired": false
-      },
-      {
-        "Name": "status",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "tableNumber",
-        "Type": "System.String",
         "IsRequired": false
       }
     ],

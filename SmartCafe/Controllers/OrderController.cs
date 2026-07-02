@@ -1,9 +1,12 @@
 ﻿
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using SmartCafe.Data;
 using SmartCafe.DTOs;
 using SmartCafe.Entities;
+using SmartCafe.Hubs;
 using SmartCafe.Models;
 using SmartCafe.Services;
 using System.Linq.Dynamic.Core;
@@ -14,7 +17,8 @@ namespace SmartCafe.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class OrderController(SmartCafeDbContext context,
-        ExportService exportService) :ControllerBase
+        ExportService exportService,
+        IHubContext<NotificationHubs> hubContext) :ControllerBase
     {
 
         [HttpGet]
@@ -28,7 +32,9 @@ namespace SmartCafe.Controllers
                 {
                     query = query.Where(o => o.OrderStatus == status);
                 }
+                var today = DateTime.Today;
                 var orders = await query
+                    .Where(o=>o.CreatedAt.Date==today)
                     .OrderByDescending(o => o.CreatedAt)
                     .ToListAsync();
 
@@ -187,9 +193,8 @@ namespace SmartCafe.Controllers
         [EndpointSummary("to filter orders by Date, Status")]
         public async Task<IActionResult> FilterOrders(
                                      [FromQuery] DateTime? startDate,
-                                     [FromQuery] DateTime? endDate,
-                                     [FromQuery] string? status,
-                                     [FromQuery] string? tableNumber)
+                                     [FromQuery] DateTime? endDate
+                                     )
         {
             try
             {
@@ -197,34 +202,16 @@ namespace SmartCafe.Controllers
 
                 if (startDate.HasValue)
                 {
-                    query = query.Where(o => o.CreatedAt >= startDate.Value);
+                    query = query.Where(o => o.CreatedAt >= startDate.Value.Date);
                 }
 
                 if (endDate.HasValue)
                 {
-                    query = query.Where(o => o.CreatedAt <= endDate.Value);
+                    var endOfDay = endDate.Value.Date.AddDays(1).AddTicks(-1);
+                    query = query.Where(o => o.CreatedAt <= endDate);
                 }
-
-                if (!string.IsNullOrEmpty(status))
-                {
-                    if(Enum.TryParse<OrderStatus>(status,true,out var parsedStatus))//convert string to Enu
-                    {
-                        query = query.Where(o => o.OrderStatus.ToString() == status);
-                    }
-                    else
-                    {
-                        return BadRequest(new DefaultResponseModel()
-                        {
-                            Success = false,
-                            Statuscode = StatusCodes.Status400BadRequest,
-                            Message = $"Invalid status value provided: {status}"
-                        });
-                    }
-                }
-
                 var filteredOrders = await query.OrderByDescending(o => o.CreatedAt).ToListAsync();
 
-                
                 var orderDtos = filteredOrders.Select(order => new ResponseDtos.OrderResponseDto
                 {
                     OrderId = order.OrderId,
@@ -268,23 +255,31 @@ namespace SmartCafe.Controllers
         [EndpointDescription("order report")]
         [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
         [ProducesResponseType(typeof(FileResult), StatusCodes.Status200OK)]
-        public async Task<IActionResult> PostExcelAsync(string? q, string? sortfield,
-            int order, [FromBody] KeyValuePair<string, string>[] columns)
+        public async Task<IActionResult> PostExcelAsync([FromQuery] DateTime? startDate,
+                                         [FromQuery] DateTime? endDate,
+                                         [FromQuery] string? q,
+                                         [FromQuery] string? sortfield,
+                                         [FromQuery] int order,
+                                          [FromBody] KeyValuePair<string, string>[] columns)
         {
             IQueryable<Order> orders = OrderQuery(q, sortfield, order);
-            DateTime today = DateTime.Today;
-            DateTime tomorrow = today.AddDays(1);
-            orders = orders.Where(p => p.CreatedAt >= today && p.CreatedAt < tomorrow);
+            DateTime start = startDate?.Date ?? DateTime.Today;
+            DateTime end = endDate?.Date ?? DateTime.Today;
+            DateTime endOfPeriod = end.AddDays(1).AddTicks(-1);
+
+            orders = orders.Where(p => p.CreatedAt >= start && p.CreatedAt <= endOfPeriod);
             List<Order> records = await orders.ToListAsync();
 
-            if (records.Count == 0)
+            if (records.Count == 0 || records==null)
             {
                 return BadRequest(new DefaultResponseModel()
                 {
+                    Success=false,
+                    Statuscode=StatusCodes.Status400BadRequest,
                     Message = "Failed to report excel"
                 });
             }
-            Stream? stream = exportService.ExportToExcelStreamSpecificColumns(records, columns, "Position List");
+            Stream? stream = exportService.ExportToExcelStreamSpecificColumns(records, columns, "Order List");
             if (stream == null)
             {
                 return BadRequest(new DefaultResponseModel()
@@ -292,8 +287,9 @@ namespace SmartCafe.Controllers
                     Message = "Failed to report excel"
                 });
             }
+            string fileName = $"Orders_Report_{start:yyyyMMdd}_to_{end:yyyyMMdd}.xlsx";
             return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                "Positions List.xlsx");
+                fileName);
         }
         //....
 
@@ -301,42 +297,43 @@ namespace SmartCafe.Controllers
         [EndpointSummary("Create Order")]
         public async Task<IActionResult> PlaceOrder(RequestDtos.OrderRequest orderDto)
         {
-            try 
-            { 
-            await context.Database.BeginTransactionAsync();
-            if(string.IsNullOrWhiteSpace(orderDto.PhoneNumber))
+            try
+            {
+                if (string.IsNullOrWhiteSpace(orderDto.PhoneNumber))
                 {
                     return BadRequest(new DefaultResponseModel()
                     {
-                        Success=false,
-                        Statuscode=StatusCodes.Status400BadRequest,
-                        Message="Phone Number is required",
-                        Data=null
-                    });
-                }
-            List<OrderItem> orderList = new List<OrderItem>();//for store order Items that ordered
-            decimal totalAmout = 0;
-            
-            //to check that the oredered menu is exist or not
-          
-            foreach (var item in orderDto.Items)
-            {
-                var itemList = await context.Menus
-                    .FirstOrDefaultAsync(p => p.MenuId == item.MenuId && p.DeletedAt == null);
-                if (itemList == null)
-                {
-                    return NotFound(new DefaultResponseModel()
-                    {
                         Success = false,
-                        Statuscode = StatusCodes.Status404NotFound,
-                        Message = "Menu doesn't exist",
+                        Statuscode = StatusCodes.Status400BadRequest,
+                        Message = "Phone Number is required",
                         Data = null
                     });
                 }
-                decimal singleItemPrice = (decimal)itemList.Price;
-                    if(item.OptionItemSelectedIds != null)
+
+                List<OrderItem> orderList = new List<OrderItem>();
+                decimal totalAmout = 0;
+
+                foreach (var item in orderDto.Items)
+                {
+                    var itemList = await context.Menus
+                        .FirstOrDefaultAsync(p => p.MenuId == item.MenuId && p.DeletedAt == null);
+
+                    if (itemList == null)
                     {
-                        foreach (var optionItem in item.OptionItemSelectedIds)//option items
+                        return NotFound(new DefaultResponseModel()
+                        {
+                            Success = false,
+                            Statuscode = StatusCodes.Status404NotFound,
+                            Message = $"Menu ID {item.MenuId} doesn't exist",
+                            Data = null
+                        });
+                    }
+
+                    decimal singleItemPrice = (decimal)itemList.Price;
+
+                    if (item.OptionItemSelectedIds != null && item.OptionItemSelectedIds.Any())
+                    {
+                        foreach (var optionItem in item.OptionItemSelectedIds)
                         {
                             var optionData = await context.OptionItems
                                 .FirstOrDefaultAsync(o => o.Id == optionItem);
@@ -346,44 +343,50 @@ namespace SmartCafe.Controllers
                             }
                         }
                     }
-                totalAmout += (singleItemPrice * item.Quantity);
-                var orderItem = new OrderItem()
-                {
-                    MenuId = item.MenuId,
-                    Quantity = item.Quantity,
-                    PriceAtOrder = singleItemPrice,
-                    SelectedOptionsJson = string.Join(",", item.OptionItemSelectedIds)
-                };
-                orderList.Add(orderItem);
-            }
+
+                    totalAmout += (singleItemPrice * item.Quantity);
+
+                    // OptionIds မပါရင် string.Empty ဖြစ်အောင် သေချာစစ်ဆေးခြင်း
+                    var selectedOptionsStr = item.OptionItemSelectedIds != null
+                        ? string.Join(",", item.OptionItemSelectedIds)
+                        : string.Empty;
+
+                    var orderItem = new OrderItem()
+                    {
+                        MenuId = item.MenuId,
+                        Quantity = item.Quantity,
+                        PriceAtOrder = singleItemPrice,
+                        SelectedOptionsJson = selectedOptionsStr
+                    };
+                    orderList.Add(orderItem);
+                }
+
                 var orderData = new Order()
                 {
-
                     OrderNumber = "ORD-" + DateTime.Now.ToString("yyyyMMddHHmmss"),
                     PhoneNumber = orderDto.PhoneNumber,
                     TotalAmount = totalAmout,
                     CreatedAt = DateTime.UtcNow,
                     OrderStatus = OrderStatus.Pending.ToString()
                 };
-            await context.Orders.AddAsync(orderData);
-            await context.SaveChangesAsync();
 
-            foreach (var itemData in orderList)
-            {
-                itemData.OrderId = orderData.OrderId;
-                
-            }
-            await context.OrderItems.AddRangeAsync(orderList);
-            await context.SaveChangesAsync();
-                
-                await context.Database.CurrentTransaction.CommitAsync();
+                await context.Orders.AddAsync(orderData);
+                await context.SaveChangesAsync();
+
+                foreach (var itemData in orderList)
+                {
+                    itemData.OrderId = orderData.OrderId;
+                }
+                await context.OrderItems.AddRangeAsync(orderList);
+                await context.SaveChangesAsync();
+
                 var responseDto = new ResponseDtos.OrderResponseDto
                 {
                     OrderId = orderData.OrderId,
                     OrderNumber = orderData.OrderNumber,
                     TotalAmount = orderData.TotalAmount,
                     OrderStatus = orderData.OrderStatus,
-                    PhoneNumber=orderData.PhoneNumber,
+                    PhoneNumber = orderData.PhoneNumber,
                     CreatedAt = orderData.CreatedAt,
                     OrderItems = orderList.Select(item => new ResponseDtos.OrderItemResponseDto
                     {
@@ -391,30 +394,29 @@ namespace SmartCafe.Controllers
                         MenuId = item.MenuId,
                         Quantity = item.Quantity,
                         PriceAtOrder = item.PriceAtOrder,
-                        SelectedOptions=new List<ResponseDtos.SelectedOptionDto>()
-                }).ToList()
+                        SelectedOptions = new List<ResponseDtos.SelectedOptionDto>()
+                    }).ToList()
                 };
+
                 return Ok(new DefaultResponseModel()
-            {
-                Success = true,
-                Statuscode = StatusCodes.Status200OK,
-                Message = "Placed order complete",
-                Data = responseDto
-            });
-        }
+                {
+                    Success = true,
+                    Statuscode = StatusCodes.Status200OK,
+                    Message = "Placed order complete",
+                    Data = responseDto
+                });
+            }
             catch (Exception ex)
-        {
-                await context.Database.CurrentTransaction.RollbackAsync();
+            {
                 var innerMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
-                //await transaction.RollbackAsync();
                 return StatusCode(StatusCodes.Status500InternalServerError, new DefaultResponseModel()
                 {
                     Success = false,
                     Statuscode = StatusCodes.Status500InternalServerError,
-                    Message = "An error occurred: " +innerMessage
+                    Message = "An error occurred in PlaceOrder: " + innerMessage,
+                    Data = null
                 });
             }
-
         }
         //payment
         [HttpPut("confirmPayment")]
@@ -447,7 +449,20 @@ namespace SmartCafe.Controllers
                 order.OrderStatus = OrderStatus.Paid.ToString();
                 order.Note = $"Paid via KPay/WavePay (Txn ID: {request.TransitionId})";
 
+                var hubPayload = new
+                {
+                    orderId = order.OrderId,
+                    orderNumber = order.OrderNumber,
+                    totalAmount = order.TotalAmount,
+                    orderStatus = order.OrderStatus,
+                    phoneNumber = order.PhoneNumber,
+                    note = order.Note,
+                    createdAt = order.CreatedAt
+                };
+
                 await context.SaveChangesAsync();
+                await hubContext.Clients.All.SendAsync("newOrderCreated",hubPayload );
+
                 return Ok(new DefaultResponseModel()
                 {
                     Success = true,
@@ -458,6 +473,7 @@ namespace SmartCafe.Controllers
             }
             catch (Exception ex)
             {
+                var innerMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
                 return StatusCode(StatusCodes.Status500InternalServerError, new DefaultResponseModel()
                 {
                     Success = false,
@@ -512,6 +528,15 @@ namespace SmartCafe.Controllers
 
             orderData.OrderStatus = OrderStatus.Ready.ToString();
             await context.SaveChangesAsync();
+            var statusPayload = new
+            {
+                orderId = orderData.OrderId,
+                orderNumber = orderData.OrderNumber,
+                orderStatus = orderData.OrderStatus,
+                phoneNumber = orderData.PhoneNumber,
+                message = "Order is completd and ready for pickup/delivery."
+            };
+            await hubContext.Clients.All.SendAsync("orderStatusUpdated", statusPayload);
             return Ok(new DefaultResponseModel()
             {
                 Success = true,

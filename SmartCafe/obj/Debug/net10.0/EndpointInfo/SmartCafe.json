@@ -300,7 +300,7 @@
         "tags": [
           "Dashboard"
         ],
-        "summary": "Get Revenue Overview",
+        "summary": "Get Revenue Overview for Day, Month, and Year",
         "parameters": [
           {
             "name": "period",
@@ -981,20 +981,6 @@
               "type": "string",
               "format": "date-time"
             }
-          },
-          {
-            "name": "status",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "tableNumber",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
@@ -1012,6 +998,22 @@
         "summary": "export excel",
         "description": "order report",
         "parameters": [
+          {
+            "name": "startDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
           {
             "name": "q",
             "in": "query",

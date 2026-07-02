@@ -97,36 +97,41 @@ namespace SmartCafe.Controllers
         }
 
         [HttpGet("Revenue_Overview")]
-        [EndpointSummary("Get Revenue Overview")]
-        public async Task<IActionResult> GetRevenue([FromQuery] string period="month")
+        [EndpointSummary("Get Revenue Overview for Day, Month, and Year")]
+        public async Task<IActionResult> GetRevenue([FromQuery] string period = "month")
         {
             var labels = new List<string>();
             var values = new List<decimal>();
-            DateTime today = DateTime.Today;
-            if (period.ToLower() == "day")
+
+            if (string.Equals(period, "day", StringComparison.OrdinalIgnoreCase))
             {
-                DateTime startDate = DateTime.Now;
-                DateTime endDate = DateTime.Now.AddDays(1);
+                DateTime startDate = DateTime.Today; // 00:00:00
+                DateTime endDate = startDate.AddDays(1); // မနက်ဖြန် 00:00:00
 
                 var hourlySales = await context.Orders
-            .Where(o => o.CreatedAt >= startDate && o.CreatedAt < endDate && o.OrderStatus != "Cancelled")
-            .Select(o => new { o.CreatedAt.Hour, o.TotalAmount })
-            .ToListAsync();
+                    .Where(o => o.CreatedAt >= startDate && o.CreatedAt < endDate && o.OrderStatus != "Cancelled")
+                    .Select(o => new { o.CreatedAt.Hour, o.TotalAmount })
+                    .ToListAsync();
 
-                for (int hour = 8; hour <= 20; hour += 2)
+                for (int hour = 0; hour <= 22; hour += 2)
                 {
                     string ampm = hour >= 12 ? "PM" : "AM";
-                    int displayHour = hour > 12 ? hour - 12 : hour;
+                    int displayHour = hour;
+                    if (hour > 12) displayHour = hour - 12;
+                    else if (hour == 0) displayHour = 12;
+
                     labels.Add($"{displayHour:D2}:00 {ampm}");
 
+                    // သက်ဆိုင်ရာ ၂ နာရီ window အလိုက် အရောင်းကို Sum ပေါင်းခြင်း
                     var sum = hourlySales.Where(h => h.Hour >= hour && h.Hour < hour + 2).Sum(h => h.TotalAmount);
                     values.Add(sum);
                 }
             }
-            else if (period.ToLower() == "year")
+            
+            else if (string.Equals(period, "year", StringComparison.OrdinalIgnoreCase))
             {
-                DateTime startDate = new DateTime(DateTime.Now.Year, 1, 1);
-                DateTime endDate = startDate.AddYears(1);
+                DateTime startDate = new DateTime(DateTime.Now.Year, 1, 1); 
+                DateTime endDate = startDate.AddYears(1); 
 
                 var monthlySales = await context.Orders
                     .Where(o => o.CreatedAt >= startDate && o.CreatedAt < endDate && o.OrderStatus != "Cancelled")
@@ -138,30 +143,37 @@ namespace SmartCafe.Controllers
                 for (int m = 1; m <= 12; m++)
                 {
                     labels.Add(monthNames[m - 1]);
+
+                    // Database ထဲမှာ ထိုလအတွက် အရောင်းမရှိရင် 0 လို့ သတ်မှတ်မယ်
                     var salesForMonth = monthlySales.FirstOrDefault(ms => ms.Month == m)?.Total ?? 0;
                     values.Add(salesForMonth);
                 }
             }
+            
             else
             {
-                DateTime startDate = new DateTime(DateTime.Now.Year,DateTime.Now.Month, 1);
-                DateTime endDate = startDate.AddMonths(1);
+                DateTime startDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1); // လဆန်း ၁ ရက်
+                DateTime endDate = startDate.AddMonths(1); // နောက်လဆန်း ၁ ရက်
 
                 var ordersInMonth = await context.Orders
                     .Where(o => o.CreatedAt >= startDate && o.CreatedAt < endDate && o.OrderStatus != "Cancelled")
                     .Select(o => new { o.CreatedAt.Day, o.TotalAmount })
                     .ToListAsync();
 
+                int daysInMonth = DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month);
+
                 for (int week = 1; week <= 4; week++)
                 {
                     labels.Add($"Week {week}");
                     int startDay = (week - 1) * 7 + 1;
-                    int endDay = week == 4 ? 31 : week * 7;
+                    int endDay = week == 4 ? daysInMonth : week * 7;
 
+                    // ရက်သတ္တပတ်အလိုက် ရက်စွဲအတွင်းရှိသော အရောင်းများကို Sum ပေါင်းခြင်း
                     var sum = ordersInMonth.Where(o => o.Day >= startDay && o.Day <= endDay).Sum(o => o.TotalAmount);
                     values.Add(sum);
                 }
             }
+
             return Ok(new
             {
                 success = true,

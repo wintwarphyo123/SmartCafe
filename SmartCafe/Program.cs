@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using OfficeOpenXml;
 using Scalar.AspNetCore;
 using SmartCafe.Data;
 using SmartCafe.Interfaces;
@@ -9,6 +10,12 @@ using SmartCafe.Services;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddSignalR();//socket
+var epplusLicense = builder.Configuration["EPPlus:ExcelPackage:License"];
+if (!string.IsNullOrEmpty(epplusLicense))
+{
+    ExcelPackage.License.SetNonCommercialPersonal(epplusLicense);
+}
 
 // 1. Existing registration for ApplicationDbContext (for Identity)
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -87,7 +94,6 @@ builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<IJwtService,JwtService>();
 
 var app = builder.Build();
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -95,15 +101,16 @@ if (app.Environment.IsDevelopment())
 
     app.MapScalarApiReference("/docs/scalar");
 }
-app.UseStaticFiles(); // This allows the server to serve images!
-
 app.UseHttpsRedirection();
+
+app.UseStaticFiles(); // This allows the server to serve images!
 
 app.UseCors("AllowAngular");//to connect angular
 
 app.UseAuthentication();
 
 app.UseAuthorization();
+app.MapHub<SmartCafe.Hubs.NotificationHubs>("/notificationHub");
 
 app.MapControllers();
 
