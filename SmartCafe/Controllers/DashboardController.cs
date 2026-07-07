@@ -20,9 +20,9 @@ namespace SmartCafe.Controllers
                 var today = DateTime.Today;
                 var menuCount =await context.Menus.CountAsync(m => m.IsAvailable == true);
                 var categoryCount = await context.Categories.CountAsync(c => c.IsActive == true);
-                var orderCount = await context.Orders.CountAsync(o=>o.OrderStatus=="Paid" && o.CreatedAt >= today);
+                var orderCount = await context.Orders.CountAsync(o=> o.Note != null && o.CreatedAt >= today);
                 var dailyRevenue = await context.Orders
-                    .Where(o => o.OrderStatus == "Paid" && o.CreatedAt >= today)
+                    .Where(o => o.Note != null && o.CreatedAt >= today)
                     .SumAsync(o => o.TotalAmount);
                 var userCount =await context.UserInfos.CountAsync(u => u.Role == "Staff");
 
@@ -46,6 +46,32 @@ namespace SmartCafe.Controllers
             {
                 return StatusCode(500, new { success = false, message = "Internal server error." });
             }
+        }
+
+        [HttpGet("First_five_orders")]
+        [EndpointSummary("Get first five orders")]
+        public async Task<IActionResult> GetFirstFiveOrders()
+        {
+            var orders = await context.Orders
+                .Where(o => o.Note != null)
+                .OrderByDescending(o => o.CreatedAt)
+                .Take(5)
+                .Select(o => new 
+                {
+                    o.OrderId,
+                    o.OrderNumber,
+                    o.TotalAmount,
+                    o.OrderStatus,
+                    CreatedAt = o.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")
+                })
+                .ToListAsync();
+            return Ok(new DefaultResponseModel()
+            {
+                Success = true,
+                Statuscode = StatusCodes.Status200OK,
+                Message = "First five orders",
+                Data = orders
+            });
         }
 
         [HttpGet("trending_item")]
@@ -95,6 +121,8 @@ namespace SmartCafe.Controllers
                 Data=result
             });
         }
+
+
 
         [HttpGet("Revenue_Overview")]
         [EndpointSummary("Get Revenue Overview for Day, Month, and Year")]

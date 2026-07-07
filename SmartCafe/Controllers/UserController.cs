@@ -312,6 +312,21 @@ namespace SmartCafe.Controllers
         [EndpointSummary("Delete User")]
         public async Task<IActionResult> DeleteUser(string id)
         {
+            var currentUserName = User.Identity?.Name;
+            if (!string.IsNullOrEmpty(currentUserName))
+            {
+                var currentUser = await userManager.FindByNameAsync(currentUserName);
+                if(currentUser!=null && currentUser.Id == id)
+                {
+                    return BadRequest(new DefaultResponseModel()
+                    {
+                        Success = false,
+                        Statuscode = StatusCodes.Status400BadRequest,
+                        Message = "Security Restriction: You cannot deactivate or delete your own account.",
+                        Data = null
+                    });
+                }
+            }
             var userInfo = await context.UserInfos.FindAsync(id);
             if (userInfo == null)
             {
@@ -325,6 +340,7 @@ namespace SmartCafe.Controllers
             }
             else
             {
+                
                 userInfo.Status = false;
                 context.UserInfos.Update(userInfo);
                 bool isSaved = await context.SaveChangesAsync() > 0;

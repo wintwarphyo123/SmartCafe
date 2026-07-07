@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using SmartCafe.Data;
 using SmartCafe.Interfaces;
 using SmartCafe.Models;
 
@@ -10,8 +12,9 @@ namespace SmartCafe.Controllers
     [ApiController]
     public class AuthController(
         IJwtService jwtService,
-        UserManager<IdentityUser> userManager
-        ):ControllerBase
+        UserManager<IdentityUser> userManager,
+        SmartCafeDbContext context
+        ) :ControllerBase
     {
         [HttpPost("login")]
         [EndpointSummary("Login")]
@@ -66,6 +69,9 @@ namespace SmartCafe.Controllers
             }
             var role = await userManager.GetRolesAsync(identityUser);
             var userRole = role.FirstOrDefault() ?? "User";
+            var userInfo=await context.UserInfos.FirstOrDefaultAsync(u=>u.UserId == identityUser.Id);
+            var profileImage = userInfo?.ProfileImage ?? "";
+            
 
             return Ok(new DefaultResponseModel()
             {
@@ -77,6 +83,8 @@ namespace SmartCafe.Controllers
                     userId = identityUser.Id,
                     userName = identityUser.UserName,
                     email = identityUser.Email,
+                    phoneNumber=identityUser.PhoneNumber,
+                    profileImage=profileImage,
                     role = userRole
                 }
             });

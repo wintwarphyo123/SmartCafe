@@ -130,6 +130,17 @@
   },
   {
     "ContainingType": "SmartCafe.Controllers.DashboardController",
+    "Method": "GetFirstFiveOrders",
+    "RelativePath": "api/Dashboard/First_five_orders",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [],
+    "Summary": "Get first five orders"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.DashboardController",
     "Method": "GetRevenue",
     "RelativePath": "api/Dashboard/Revenue_Overview",
     "HttpMethod": "GET",

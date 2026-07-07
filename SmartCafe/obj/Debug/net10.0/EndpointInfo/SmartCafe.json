@@ -241,6 +241,19 @@
         }
       }
     },
+    "/api/Dashboard/First_five_orders": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "summary": "Get first five orders",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Dashboard/trending_item": {
       "get": {
         "tags": [
