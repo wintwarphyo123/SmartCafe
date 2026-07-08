@@ -3,24 +3,36 @@
   "WorkspaceRootPath": "C:\\Users\\acer\\source\\repos\\SmartCafe\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{1164B640-573A-A6F4-4E25-D4485A57692D}|SmartCafe\\SmartCafe.csproj|c:\\users\\acer\\source\\repos\\smartcafe\\smartcafe\\controllers\\menucontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1164B640-573A-A6F4-4E25-D4485A57692D}|SmartCafe\\SmartCafe.csproj|solutionrelative:smartcafe\\controllers\\menucontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{1164B640-573A-A6F4-4E25-D4485A57692D}|SmartCafe\\SmartCafe.csproj|c:\\users\\acer\\source\\repos\\smartcafe\\smartcafe\\controllers\\ordercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{1164B640-573A-A6F4-4E25-D4485A57692D}|SmartCafe\\SmartCafe.csproj|solutionrelative:smartcafe\\controllers\\ordercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1164B640-573A-A6F4-4E25-D4485A57692D}|SmartCafe\\SmartCafe.csproj|c:\\users\\acer\\source\\repos\\smartcafe\\smartcafe\\controllers\\optionitemcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1164B640-573A-A6F4-4E25-D4485A57692D}|SmartCafe\\SmartCafe.csproj|solutionrelative:smartcafe\\controllers\\optionitemcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1164B640-573A-A6F4-4E25-D4485A57692D}|SmartCafe\\SmartCafe.csproj|c:\\users\\acer\\source\\repos\\smartcafe\\smartcafe\\controllers\\optiongroupcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1164B640-573A-A6F4-4E25-D4485A57692D}|SmartCafe\\SmartCafe.csproj|solutionrelative:smartcafe\\controllers\\optiongroupcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1164B640-573A-A6F4-4E25-D4485A57692D}|SmartCafe\\SmartCafe.csproj|c:\\users\\acer\\source\\repos\\smartcafe\\smartcafe\\entities\\optiongroup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1164B640-573A-A6F4-4E25-D4485A57692D}|SmartCafe\\SmartCafe.csproj|solutionrelative:smartcafe\\entities\\optiongroup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{1164B640-573A-A6F4-4E25-D4485A57692D}|SmartCafe\\SmartCafe.csproj|c:\\users\\acer\\source\\repos\\smartcafe\\smartcafe\\dtos\\responsedtos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{1164B640-573A-A6F4-4E25-D4485A57692D}|SmartCafe\\SmartCafe.csproj|solutionrelative:smartcafe\\dtos\\responsedtos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{1164B640-573A-A6F4-4E25-D4485A57692D}|SmartCafe\\SmartCafe.csproj|c:\\users\\acer\\source\\repos\\smartcafe\\smartcafe\\controllers\\menucontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1164B640-573A-A6F4-4E25-D4485A57692D}|SmartCafe\\SmartCafe.csproj|solutionrelative:smartcafe\\controllers\\menucontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{1164B640-573A-A6F4-4E25-D4485A57692D}|SmartCafe\\SmartCafe.csproj|c:\\users\\acer\\source\\repos\\smartcafe\\smartcafe\\dtos\\requestdtos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1164B640-573A-A6F4-4E25-D4485A57692D}|SmartCafe\\SmartCafe.csproj|solutionrelative:smartcafe\\dtos\\requestdtos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{1164B640-573A-A6F4-4E25-D4485A57692D}|SmartCafe\\SmartCafe.csproj|c:\\users\\acer\\source\\repos\\smartcafe\\smartcafe\\controllers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{1164B640-573A-A6F4-4E25-D4485A57692D}|SmartCafe\\SmartCafe.csproj|solutionrelative:smartcafe\\controllers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1164B640-573A-A6F4-4E25-D4485A57692D}|SmartCafe\\SmartCafe.csproj|c:\\users\\acer\\source\\repos\\smartcafe\\smartcafe\\entities\\order.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1164B640-573A-A6F4-4E25-D4485A57692D}|SmartCafe\\SmartCafe.csproj|solutionrelative:smartcafe\\entities\\order.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -30,7 +42,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 7,
+          "SelectedChildIndex": 5,
           "Children": [
             {
               "$type": "Bookmark",
@@ -46,33 +58,59 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 4,
+              "Title": "OptionGroup.cs",
+              "DocumentMoniker": "C:\\Users\\acer\\source\\repos\\SmartCafe\\SmartCafe\\Entities\\OptionGroup.cs",
+              "RelativeDocumentMoniker": "SmartCafe\\Entities\\OptionGroup.cs",
+              "ToolTip": "C:\\Users\\acer\\source\\repos\\SmartCafe\\SmartCafe\\Entities\\OptionGroup.cs",
+              "RelativeToolTip": "SmartCafe\\Entities\\OptionGroup.cs",
+              "ViewState": "AgIAAA0AAAAAAAAAAAAQwBEAAAAlAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-08T07:44:53.761Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "RequestDtos.cs",
+              "DocumentMoniker": "C:\\Users\\acer\\source\\repos\\SmartCafe\\SmartCafe\\DTOs\\RequestDtos.cs",
+              "RelativeDocumentMoniker": "SmartCafe\\DTOs\\RequestDtos.cs",
+              "ToolTip": "C:\\Users\\acer\\source\\repos\\SmartCafe\\SmartCafe\\DTOs\\RequestDtos.cs",
+              "RelativeToolTip": "SmartCafe\\DTOs\\RequestDtos.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAAAwAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-08T03:26:12.112Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
               "Title": "MenuController.cs",
               "DocumentMoniker": "C:\\Users\\acer\\source\\repos\\SmartCafe\\SmartCafe\\Controllers\\MenuController.cs",
               "RelativeDocumentMoniker": "SmartCafe\\Controllers\\MenuController.cs",
               "ToolTip": "C:\\Users\\acer\\source\\repos\\SmartCafe\\SmartCafe\\Controllers\\MenuController.cs",
               "RelativeToolTip": "SmartCafe\\Controllers\\MenuController.cs",
-              "ViewState": "AgIAAMsAAAAAAAAAAAAswNUAAAAIAAAAAAAAAA==",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAIwCYAAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-07-07T07:03:51.135Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 5,
               "Title": "ResponseDtos.cs",
               "DocumentMoniker": "C:\\Users\\acer\\source\\repos\\SmartCafe\\SmartCafe\\DTOs\\ResponseDtos.cs",
               "RelativeDocumentMoniker": "SmartCafe\\DTOs\\ResponseDtos.cs",
               "ToolTip": "C:\\Users\\acer\\source\\repos\\SmartCafe\\SmartCafe\\DTOs\\ResponseDtos.cs",
               "RelativeToolTip": "SmartCafe\\DTOs\\ResponseDtos.cs",
-              "ViewState": "AgIAAFYAAAAAAAAAAAAAwDwAAAAvAAAAAAAAAA==",
+              "ViewState": "AgIAACgAAAAAAAAAAAAkwDEAAAAqAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-07-07T05:14:14.889Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 7,
               "Title": "UserController.cs",
               "DocumentMoniker": "C:\\Users\\acer\\source\\repos\\SmartCafe\\SmartCafe\\Controllers\\UserController.cs",
               "RelativeDocumentMoniker": "SmartCafe\\Controllers\\UserController.cs",
@@ -85,27 +123,41 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "Order.cs",
-              "DocumentMoniker": "C:\\Users\\acer\\source\\repos\\SmartCafe\\SmartCafe\\Entities\\Order.cs",
-              "RelativeDocumentMoniker": "SmartCafe\\Entities\\Order.cs",
-              "ToolTip": "C:\\Users\\acer\\source\\repos\\SmartCafe\\SmartCafe\\Entities\\Order.cs",
-              "RelativeToolTip": "SmartCafe\\Entities\\Order.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAAABMAAAARAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-30T07:04:10.269Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "OrderController.cs",
               "DocumentMoniker": "C:\\Users\\acer\\source\\repos\\SmartCafe\\SmartCafe\\Controllers\\OrderController.cs",
               "RelativeDocumentMoniker": "SmartCafe\\Controllers\\OrderController.cs",
               "ToolTip": "C:\\Users\\acer\\source\\repos\\SmartCafe\\SmartCafe\\Controllers\\OrderController.cs",
               "RelativeToolTip": "SmartCafe\\Controllers\\OrderController.cs",
-              "ViewState": "AgIAAOsCAAAAAAAAAAAIwPgCAAAhAAAAAAAAAA==",
+              "ViewState": "AgIAABwAAAAAAAAAAAAQwCMAAAAzAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-07-01T09:58:19.556Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "OptionItemController.cs",
+              "DocumentMoniker": "C:\\Users\\acer\\source\\repos\\SmartCafe\\SmartCafe\\Controllers\\OptionItemController.cs",
+              "RelativeDocumentMoniker": "SmartCafe\\Controllers\\OptionItemController.cs",
+              "ToolTip": "C:\\Users\\acer\\source\\repos\\SmartCafe\\SmartCafe\\Controllers\\OptionItemController.cs",
+              "RelativeToolTip": "SmartCafe\\Controllers\\OptionItemController.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAFoAAAAlAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-08T07:55:21.96Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "OptionGroupController.cs",
+              "DocumentMoniker": "C:\\Users\\acer\\source\\repos\\SmartCafe\\SmartCafe\\Controllers\\OptionGroupController.cs",
+              "RelativeDocumentMoniker": "SmartCafe\\Controllers\\OptionGroupController.cs",
+              "ToolTip": "C:\\Users\\acer\\source\\repos\\SmartCafe\\SmartCafe\\Controllers\\OptionGroupController.cs",
+              "RelativeToolTip": "SmartCafe\\Controllers\\OptionGroupController.cs",
+              "ViewState": "AgIAAJMAAAAAAAAAAAAYwLUAAAA7AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-08T07:45:56.048Z",
               "EditorCaption": ""
             }
           ]

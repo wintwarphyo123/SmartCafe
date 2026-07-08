@@ -453,6 +453,23 @@
     "Summary": "Delete Option Group"
   },
   {
+    "ContainingType": "SmartCafe.Controllers.OptionGroupController",
+    "Method": "UpdateStatus",
+    "RelativePath": "api/OptionGroup/{id}/update-status",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [],
+    "Summary": "UpdateStatus"
+  },
+  {
     "ContainingType": "SmartCafe.Controllers.OptionItemController",
     "Method": "GetOptionItems",
     "RelativePath": "api/OptionItem",
@@ -518,6 +535,23 @@
     ],
     "ReturnTypes": [],
     "Summary": "Delete Option Item"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.OptionItemController",
+    "Method": "UpdateStatus",
+    "RelativePath": "api/OptionItem/{id}/update-status",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [],
+    "Summary": "UpdateStatus"
   },
   {
     "ContainingType": "SmartCafe.Controllers.OrderController",

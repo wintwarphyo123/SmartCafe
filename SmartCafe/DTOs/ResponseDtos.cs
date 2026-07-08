@@ -34,6 +34,7 @@ namespace SmartCafe.DTOs
         {
             public int? Id { get; set; }
             public string? GroupName { get; set; } 
+            public bool? Status { get; set; }
         }
 
         public class ResponseOptionItem()
@@ -41,6 +42,7 @@ namespace SmartCafe.DTOs
             public int? Id { get; set; }
             public string? ItemName {  get; set; }
             public decimal? ExtraPrice {  get; set; }
+            public bool? Status { get; set; }
             public int? OptionGroupId {  get; set; }
             public string? GroupName { get; set; }
         }
@@ -77,6 +79,7 @@ namespace SmartCafe.DTOs
             public string PhoneNumber { get; set; } = null!;
             public string? Note { get; set; }
             public DateTime CreatedAt { get; set; }
+            public DateTime? UpdatedAt { get; set; }
 
             public List<OrderItemResponseDto> OrderItems { get; set; }=new();
         }

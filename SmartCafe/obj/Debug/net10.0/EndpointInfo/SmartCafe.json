@@ -759,6 +759,34 @@
         }
       }
     },
+    "/api/OptionGroup/{id}/update-status": {
+      "put": {
+        "tags": [
+          "OptionGroup"
+        ],
+        "summary": "UpdateStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/OptionItem": {
       "get": {
         "tags": [
@@ -855,6 +883,34 @@
           "OptionItem"
         ],
         "summary": "Delete Option Item",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/OptionItem/{id}/update-status": {
+      "put": {
+        "tags": [
+          "OptionItem"
+        ],
+        "summary": "UpdateStatus",
         "parameters": [
           {
             "name": "id",

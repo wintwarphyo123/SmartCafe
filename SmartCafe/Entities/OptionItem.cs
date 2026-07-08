@@ -20,6 +20,8 @@ public partial class OptionItem
     [Column(TypeName = "decimal(18, 2)")]
     public decimal ExtraPrice { get; set; }
 
+    public bool? Status { get; set; }
+
     [Column(TypeName = "datetime")]
     public DateTime? CreatedAt { get; set; }
 

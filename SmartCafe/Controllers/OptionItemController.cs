@@ -23,6 +23,7 @@ namespace SmartCafe.Controllers
                     ItemName = i.ItemName,
                     ExtraPrice = i.ExtraPrice,
                     OptionGroupId = i.OptionGroupId,
+                    Status= i.Status,
                     GroupName=i.OptionGroup.GroupName?? "No Category"
                 }).ToListAsync();
             if (!ItemList.Any())
@@ -77,8 +78,9 @@ namespace SmartCafe.Controllers
             {
                 ItemName = itemdto.ItemName,
                 ExtraPrice = itemdto.ExtraPrice,
-                OptionGroupId= itemdto.OptionGroupId,
-                CreatedAt= DateTime.UtcNow
+                OptionGroupId = itemdto.OptionGroupId,
+                CreatedAt = DateTime.UtcNow,
+                Status = true
             };
             await context.OptionItems.AddAsync(itemData);
             bool isSaved = await context.SaveChangesAsync() > 0;
@@ -142,6 +144,7 @@ namespace SmartCafe.Controllers
             itemData.ExtraPrice= itemDto.ExtraPrice;
             itemData.OptionGroupId= itemDto.OptionGroupId;
             itemData.UpdatedAt = DateTime.UtcNow;
+            itemData.Status = true;
             context.OptionItems.Update(itemData);
             bool isSaved=await context.SaveChangesAsync()>0;
             
@@ -171,6 +174,37 @@ namespace SmartCafe.Controllers
                     Statuscode = StatusCodes.Status400BadRequest,
                     Message = "Option Item updated failed",
                     Data = null
+                });
+            }
+        }
+
+        [HttpPut("{id}/update-status")]
+        [EndpointSummary("UpdateStatus")]
+        public async Task<IActionResult> UpdateStatus(int id)
+        {
+            var optionItemData = await context.OptionItems
+                .FirstOrDefaultAsync(o => o.Id == id);
+            if (optionItemData == null)
+            {
+                return BadRequest(new DefaultResponseModel()
+                {
+                    Success = false,
+                    Statuscode = StatusCodes.Status400BadRequest,
+                    Message = "Data is missed",
+                    Data = null
+                });
+            }
+            else
+            {
+                optionItemData.Status = !optionItemData.Status;
+                context.OptionItems.Update(optionItemData);
+                await context.SaveChangesAsync();
+                return Ok(new DefaultResponseModel()
+                {
+                    Success = true,
+                    Statuscode = StatusCodes.Status200OK,
+                    Message = "Status change successfully",
+                    Data =optionItemData
                 });
             }
         }

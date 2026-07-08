@@ -20,7 +20,8 @@ namespace SmartCafe.Controllers
                 .Select(o=> new ResponseDtos.ResponseOptionGroup()
                 {
                     Id=o.Id,
-                    GroupName=o.GroupName
+                    GroupName=o.GroupName,
+                    Status=o.Status,
                 }).ToListAsync();
             if (!optionList.Any())
             {
@@ -74,7 +75,8 @@ namespace SmartCafe.Controllers
                 var optionData = new OptionGroup()
                 {
                     GroupName = optiondto.GroupName,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    Status=true
                 };
                 await context.OptionGroups.AddAsync(optionData);
                 bool isSaved=await context.SaveChangesAsync()>0;
@@ -126,6 +128,7 @@ namespace SmartCafe.Controllers
             {
                 optionData.GroupName = optiondto.GroupName;
                 optionData.UpdatedAt = DateTime.UtcNow;
+                optionData.Status = true;
                 context.OptionGroups.Update(optionData);
                 bool isSaved=await context.SaveChangesAsync()>0;
                 if (isSaved)
@@ -158,6 +161,37 @@ namespace SmartCafe.Controllers
             }
         }
 
+        [HttpPut("{id}/update-status")]
+        [EndpointSummary("UpdateStatus")]
+        public async Task<IActionResult> UpdateStatus(int id)
+        {
+            var optionGroupData = await context.OptionGroups
+                .FirstOrDefaultAsync(o=> o.Id  == id);
+            if (optionGroupData == null)
+            {
+                return BadRequest(new DefaultResponseModel()
+                {
+                    Success = false,
+                    Statuscode = StatusCodes.Status400BadRequest,
+                    Message = "Data is missed",
+                    Data = null
+                });
+            }
+            else
+            {
+                optionGroupData.Status = !optionGroupData.Status;
+                context.OptionGroups.Update(optionGroupData);
+                await context.SaveChangesAsync();
+                return Ok(new DefaultResponseModel()
+                {
+                    Success = true,
+                    Statuscode = StatusCodes.Status200OK,
+                    Message = "Status change successfully",
+                    Data = optionGroupData
+                });
+            }
+        }
+
         [HttpDelete("{id}")]
         [EndpointSummary("Delete Option Group")]
         public async Task<IActionResult> DeleteOption(int id)
@@ -176,6 +210,7 @@ namespace SmartCafe.Controllers
             else
             {
                 optionData.DeletedAt = DateTime.UtcNow;
+                
                 context.OptionGroups.Update(optionData);
                 bool isSaved=await  context.SaveChangesAsync()>0;
                 if (isSaved)

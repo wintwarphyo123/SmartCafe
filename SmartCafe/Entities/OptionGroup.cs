@@ -15,6 +15,8 @@ public partial class OptionGroup
     [StringLength(150)]
     public string GroupName { get; set; } = null!;
 
+    public bool? Status { get; set; }
+
     [Column(TypeName = "datetime")]
     public DateTime? CreatedAt { get; set; }
 

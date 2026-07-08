@@ -33,7 +33,7 @@ namespace SmartCafe.Controllers
                 }
                 var today = DateTime.Today;
                 var orders = await query
-                    .Where(o=>o.CreatedAt.Date==today)
+             .Where(o => o.CreatedAt.Date == today)
                     .OrderByDescending(o => o.CreatedAt)
                     .ToListAsync();
 
@@ -55,164 +55,6 @@ namespace SmartCafe.Controllers
                 });
             }
         }
-
-        //[HttpGet("{id}")]
-        //[EndpointSummary("Get Order Detail By Id")]
-        //public async Task<IActionResult> GetOrderById(int id)
-        //{
-        //    try
-        //    {
-        //        var order = await context.Orders
-        //            .Include(o => o.OrderItems)
-        //            .ThenInclude(item=>item.Menu)
-        //            .FirstOrDefaultAsync(o => o.OrderId == id);
-
-        //        if (order == null)
-        //        {
-        //            return NotFound(new DefaultResponseModel()
-        //            {
-        //                Success = false,
-        //                Statuscode = StatusCodes.Status404NotFound,
-        //                Message = "Order not found",
-        //                Data = null
-        //            });
-        //        }
-        //        var responseDto = new ResponseDtos.OrderResponseDto
-        //        {
-        //            OrderId = order.OrderId,
-        //            OrderNumber = order.OrderNumber,
-        //            TotalAmount = order.TotalAmount,
-        //            PhoneNumber=order.PhoneNumber,
-        //            OrderStatus = order.OrderStatus,
-        //            Note = order.Note,
-        //            CreatedAt = order.CreatedAt,
-
-        //            OrderItems = order.OrderItems.Select(item => {
-
-        //                var optionIds = new List<int>();
-
-        //                if (!string.IsNullOrWhiteSpace(item.SelectedOptionsJson))
-        //                {
-        //                    var jsonStr = item.SelectedOptionsJson.Trim();
-        //                    if (jsonStr.StartsWith("[") && jsonStr.EndsWith("]"))
-        //                    {
-        //                        try
-        //                        {
-        //                            optionIds = JsonSerializer.Deserialize<List<int>>(jsonStr) ?? new List<int>();
-        //                        }
-        //                        catch
-        //                        {
-        //                            optionIds = jsonStr.Trim('[', ']')
-        //                                               .Split(',', StringSplitOptions.RemoveEmptyEntries)
-        //                                               .Select(int.Parse).ToList();
-        //                        }
-        //                    }
-        //                    else
-        //                    {
-        //                        optionIds = jsonStr.Split(',', StringSplitOptions.RemoveEmptyEntries)
-        //                                           .Select(int.Parse).ToList();
-        //                    }
-        //                }
-
-        //                return new ResponseDtos.OrderItemResponseDto
-        //                {
-        //                    OrderItemId = item.OrderItemId,
-        //                    MenuId = item.MenuId,
-        //                    MenuName = item.Menu?.MenuName ?? "Unknown Item",
-        //                    Quantity = item.Quantity,
-        //                    PriceAtOrder = item.PriceAtOrder,
-        //                    SelectedOptions = context.OptionItems
-        //                        .Include(oi => oi.OptionGroup)
-        //                        .Where(oi => optionIds.Contains(oi.Id))
-        //                        .Select(oi => new ResponseDtos.SelectedOptionDto
-        //                        {
-        //                            OptionGroupName = oi.OptionGroup!.GroupName,
-        //                            OptionItemName = oi.ItemName,
-        //                            ExtraPrice = oi.ExtraPrice
-        //                        }).ToList()
-        //                };
-        //            }).ToList()
-        //        };
-
-        //        return Ok(new DefaultResponseModel()
-        //        {
-        //            Success = true,
-        //            Statuscode = StatusCodes.Status200OK,
-        //            Message = "Order detail retrieved successfully",
-        //            Data = responseDto
-        //        });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(StatusCodes.Status500InternalServerError, new DefaultResponseModel()
-        //        {
-        //            Success = false,
-        //            Statuscode = StatusCodes.Status500InternalServerError,
-        //            Message = "An error occurred: " + ex.Message
-        //        });
-        //    }
-        //}
-
-        // [HttpGet("{id}")]
-        //[EndpointSummary("Get Order Detail By Id")]
-        //public async Task<IActionResult> GetOrderById(int id)
-        //{
-        //    var order = await context.Orders
-        //        .Include(o => o.OrderItems)
-        //            .ThenInclude(item => item.Menu)
-        //        .Where(o => o.OrderId == id)
-        //        .FirstOrDefaultAsync();
-
-        //    if (order == null)
-        //    {
-        //        return NotFound(new DefaultResponseModel
-        //        {
-        //            Success = false,
-        //            Statuscode = StatusCodes.Status404NotFound,
-        //            Message = "Order not found"
-        //        });
-        //    }
-
-        //    var responseDto = new ResponseDtos.OrderResponseDto
-        //    {
-        //        OrderId = order.OrderId,
-        //        OrderNumber = order.OrderNumber,
-        //        TotalAmount = order.TotalAmount,
-        //        PhoneNumber = order.PhoneNumber,
-        //        OrderStatus = order.OrderStatus,
-        //        Note = order.Note,
-        //        CreatedAt = order.CreatedAt,
-
-        //        OrderItems = order.OrderItems
-        //            .Select(item => new ResponseDtos.OrderItemResponseDto
-        //            {
-        //                OrderItemId = item.OrderItemId,
-        //                MenuId = item.MenuId,
-        //                MenuName = item.Menu?.MenuName ?? "Unknown Item",
-        //                Quantity = item.Quantity,
-        //                PriceAtOrder = item.PriceAtOrder,
-
-        //                SelectedOptions = context.OptionItems
-        //                    .Where(oi => (!string.IsNullOrEmpty(item.SelectedOptionsJson) &&
-        //                                  item.SelectedOptionsJson.Contains(oi.Id.ToString())))
-        //                    .Select(oi => new ResponseDtos.SelectedOptionDto
-        //                    {
-        //                        OptionGroupName = oi.OptionGroup!.GroupName,
-        //                        OptionItemName = oi.ItemName,
-        //                        ExtraPrice = oi.ExtraPrice
-        //                    }).ToList()
-        //            }).ToList()
-        //    };
-
-        //    return Ok(new DefaultResponseModel
-        //    {
-        //        Success = true,
-        //        Statuscode = StatusCodes.Status200OK,
-        //        Message = "Order detail retrieved successfully",
-        //        Data = responseDto
-        //    });
-        //}
-
 
         [HttpGet("{id}")]
         [EndpointSummary("Get Order Detail By Id")]
@@ -295,6 +137,7 @@ namespace SmartCafe.Controllers
                 OrderStatus = order.OrderStatus,
                 Note = order.Note,
                 CreatedAt = order.CreatedAt,
+                UpdatedAt=order.UpdatedAt,
 
                 OrderItems = order.OrderItems.Select(item => new ResponseDtos.OrderItemResponseDto
                 {
@@ -357,6 +200,7 @@ namespace SmartCafe.Controllers
                 Note = order.Note,
                 PhoneNumber=order.PhoneNumber,
                 CreatedAt = order.CreatedAt,
+                UpdatedAt= order.UpdatedAt,
                 OrderItems = order.OrderItems.Select(item => new ResponseDtos.OrderItemResponseDto
                 {
                     OrderItemId = item.OrderItemId,
@@ -409,6 +253,7 @@ namespace SmartCafe.Controllers
                     Note = order.Note,
                     PhoneNumber=order.PhoneNumber,
                     CreatedAt = order.CreatedAt,
+                    UpdatedAt= order.UpdatedAt,
                     OrderItems = order.OrderItems.Select(item => new ResponseDtos.OrderItemResponseDto
                     {
                         OrderItemId = item.OrderItemId,
@@ -479,132 +324,7 @@ namespace SmartCafe.Controllers
             return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 fileName);
         }
-        //....
-
-        //[HttpPost]
-        //[EndpointSummary("Create Order")]
-        //public async Task<IActionResult> PlaceOrder(RequestDtos.OrderRequest orderDto)
-        //{
-        //    try
-        //    {
-        //        if (string.IsNullOrWhiteSpace(orderDto.PhoneNumber))
-        //        {
-        //            return BadRequest(new DefaultResponseModel()
-        //            {
-        //                Success = false,
-        //                Statuscode = StatusCodes.Status400BadRequest,
-        //                Message = "Phone Number is required",
-        //                Data = null
-        //            });
-        //        }
-
-        //        List<OrderItem> orderList = new List<OrderItem>();
-        //        decimal totalAmout = 0;
-
-        //        foreach (var item in orderDto.Items)
-        //        {
-        //            var itemList = await context.Menus
-        //                .FirstOrDefaultAsync(p => p.MenuId == item.MenuId && p.DeletedAt == null);
-
-        //            if (itemList == null)
-        //            {
-        //                return NotFound(new DefaultResponseModel()
-        //                {
-        //                    Success = false,
-        //                    Statuscode = StatusCodes.Status404NotFound,
-        //                    Message = $"Menu ID {item.MenuId} doesn't exist",
-        //                    Data = null
-        //                });
-        //            }
-
-        //            decimal singleItemPrice = (decimal)itemList.Price;
-
-        //            if (item.OptionItemSelectedIds != null && item.OptionItemSelectedIds.Any())
-        //            {
-        //                foreach (var optionItem in item.OptionItemSelectedIds)
-        //                {
-        //                    var optionData = await context.OptionItems
-        //                        .FirstOrDefaultAsync(o => o.Id == optionItem);
-        //                    if (optionData != null)
-        //                    {
-        //                        singleItemPrice += optionData.ExtraPrice;
-        //                    }
-        //                }
-        //            }
-
-        //            totalAmout += (singleItemPrice * item.Quantity);
-
-        //            var selectedOptionsStr = item.OptionItemSelectedIds != null
-        //                ? string.Join(",", item.OptionItemSelectedIds)
-        //                : string.Empty;
-
-        //            var orderItem = new OrderItem()
-        //            {
-        //                MenuId = item.MenuId,
-        //                Quantity = item.Quantity,
-        //                PriceAtOrder = singleItemPrice,
-        //                SelectedOptionsJson = selectedOptionsStr
-        //            };
-        //            orderList.Add(orderItem);
-        //        }
-
-        //        var orderData = new Order()
-        //        {
-        //            OrderNumber = "ORD-" + DateTime.Now.ToString("yyyyMMddHHmmss"),
-        //            PhoneNumber = orderDto.PhoneNumber,
-        //            TotalAmount = totalAmout,
-        //            CreatedAt = DateTime.UtcNow,
-        //            OrderStatus = OrderStatus.Paid.ToString()
-        //        };
-
-        //        await context.Orders.AddAsync(orderData);
-        //        await context.SaveChangesAsync();
-
-        //        foreach (var itemData in orderList)
-        //        {
-        //            itemData.OrderId = orderData.OrderId;
-        //        }
-        //        await context.OrderItems.AddRangeAsync(orderList);
-        //        await context.SaveChangesAsync();
-
-        //        var responseDto = new ResponseDtos.OrderResponseDto
-        //        {
-        //            OrderId = orderData.OrderId,
-        //            OrderNumber = orderData.OrderNumber,
-        //            TotalAmount = orderData.TotalAmount,
-        //            OrderStatus = orderData.OrderStatus,
-        //            PhoneNumber = orderData.PhoneNumber,
-        //            CreatedAt = orderData.CreatedAt,
-        //            OrderItems = orderList.Select(item => new ResponseDtos.OrderItemResponseDto
-        //            {
-        //                OrderItemId = item.OrderItemId,
-        //                MenuId = item.MenuId,
-        //                Quantity = item.Quantity,
-        //                PriceAtOrder = item.PriceAtOrder,
-        //                SelectedOptions = new List<ResponseDtos.SelectedOptionDto>()
-        //            }).ToList()
-        //        };
-
-        //        return Ok(new DefaultResponseModel()
-        //        {
-        //            Success = true,
-        //            Statuscode = StatusCodes.Status200OK,
-        //            Message = "Placed order complete",
-        //            Data = responseDto
-        //        });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        var innerMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
-        //        return StatusCode(StatusCodes.Status500InternalServerError, new DefaultResponseModel()
-        //        {
-        //            Success = false,
-        //            Statuscode = StatusCodes.Status500InternalServerError,
-        //            Message = "An error occurred in PlaceOrder: " + innerMessage,
-        //            Data = null
-        //        });
-        //    }
-        //}
+       
         [HttpPost]
         [EndpointSummary("Create Order")]
         public async Task<IActionResult> PlaceOrder(RequestDtos.OrderRequest orderDto)
@@ -711,6 +431,7 @@ namespace SmartCafe.Controllers
                     OrderStatus = orderData.OrderStatus,
                     PhoneNumber = orderData.PhoneNumber,
                     CreatedAt = orderData.CreatedAt,
+                    UpdatedAt = orderData.UpdatedAt,
                     OrderItems = orderList.Select(item => {
                         // Deserialize the stored IDs to match against pre-loaded master records
                         var optionIds = JsonSerializer.Deserialize<List<int>>(item.SelectedOptionsJson) ?? new List<int>();
@@ -849,6 +570,7 @@ namespace SmartCafe.Controllers
             }
 
             orderData.OrderStatus = OrderStatus.Preparing.ToString();
+            orderData.UpdatedAt = DateTime.UtcNow;
             await context.SaveChangesAsync();
             var statusPayload = new
             {
@@ -886,6 +608,7 @@ namespace SmartCafe.Controllers
             }
 
             orderData.OrderStatus = OrderStatus.Ready.ToString();
+            orderData.UpdatedAt = DateTime.UtcNow;
             var today = DateTime.Today;
             var nextWaitingOrder = await context.Orders
             .Where(o => o.OrderStatus == "Pending" && o.CreatedAt.Date == today)

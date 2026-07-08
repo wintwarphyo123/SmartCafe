@@ -32,6 +32,9 @@ public partial class Order
     [Column(TypeName = "datetime")]
     public DateTime CreatedAt { get; set; }
 
+    [Column(TypeName = "datetime")]
+    public DateTime? UpdatedAt { get; set; }
+
     [InverseProperty("Order")]
     public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 }

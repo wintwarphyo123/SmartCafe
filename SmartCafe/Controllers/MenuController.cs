@@ -198,7 +198,7 @@ namespace SmartCafe.Controllers
                     GroupId = og.Id,
                     GroupName = og.GroupName,
                     OptionItems = context.OptionItems
-                        .Where(oi => oi.OptionGroupId == og.Id)
+                        .Where(oi => oi.OptionGroupId == og.Id && oi.DeletedAt==null)
                         .Select(oi => new OptionItemDto
                         {
                             ItemId = oi.Id,
@@ -240,7 +240,7 @@ namespace SmartCafe.Controllers
                         GroupName = mog.OptionGroup.GroupName,
 
                         OptionItems = context.OptionItems
-                            .Where(oi => oi.OptionGroupId == mog.OptionGroupId)
+                            .Where(oi => oi.OptionGroupId == mog.OptionGroupId && oi.DeletedAt==null)
                             .Select(oi => new OptionItemDto
                             {
                                 ItemId = oi.Id,
@@ -515,7 +515,7 @@ namespace SmartCafe.Controllers
                 });
             }
             menuData.DeletedAt=DateTime.UtcNow;
-            menuData.IsAvailable = false;
+            
             context.Menus.Update(menuData);
             return await context.SaveChangesAsync() > 0
                 ? StatusCode(StatusCodes.Status201Created, new DefaultResponseModel()
