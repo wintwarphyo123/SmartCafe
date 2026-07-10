@@ -26,14 +26,29 @@ namespace SmartCafe.Controllers
         {
             try
             {
+                var today = DateTime.Today;
+                var stateOrder = await context.Orders
+                    .Where(o => o.CreatedAt < today &&
+                               (o.OrderStatus == "Paid" || o.OrderStatus == "Preparing"))
+                    .ToListAsync();
+                if (stateOrder.Any())
+                {
+                    foreach (var order in stateOrder)
+                    {
+                        order.OrderStatus = "Cancelled";
+                        order.UpdatedAt = DateTime.UtcNow;
+                        order.Note = (order.Note ?? "") + " [System Auto-Cancelled: Leftover from previous day]";
+                    }
+                    await context.SaveChangesAsync();
+                }
                 var query = context.Orders.AsQueryable();
                 if (!string.Equals(status, "All", StringComparison.OrdinalIgnoreCase))
                 {
                     query = query.Where(o => o.OrderStatus == status);
                 }
-                var today = DateTime.Today;
+                //var today = DateTime.Today;
                 var orders = await query
-             .Where(o => o.CreatedAt.Date == today)
+      .Where(o => o.CreatedAt.Date == today)
                     .OrderByDescending(o => o.CreatedAt)
                     .ToListAsync();
 
@@ -507,7 +522,7 @@ namespace SmartCafe.Controllers
                 var today = DateTime.UtcNow.Date;
 
                 bool hasOrdersInQueue = await context.Orders
-        .AnyAsync(o => o.OrderStatus == "Paid" && o.CreatedAt < order.CreatedAt && o.OrderId != order.OrderId);
+        .AnyAsync(o => o.OrderStatus == "Paid" || o.OrderStatus == "Preparing" && o.CreatedAt < order.CreatedAt && o.OrderId != order.OrderId);
                 bool isKitchenBusy = await context.Orders
                     .AnyAsync(o => o.OrderStatus == "Preparing" && o.CreatedAt.Date == today);
                 string finalStatus = (!hasOrdersInQueue && !isKitchenBusy) ? "Preparing" : "Paid" ;

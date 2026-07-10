@@ -68,6 +68,7 @@ namespace SmartCafe.DTOs
             public int ItemId { get; set; }
             public string ItemName { get; set; } = null!;
             public decimal ExtraPrice { get; set; }
+            public bool IsAvailable { get; set; } = true;
         }
         
         public class OrderResponseDto
@@ -114,6 +115,7 @@ namespace SmartCafe.DTOs
         public class TrendingItemResponseModel
         {
             public int MenuId { get; set; }
+            public string MenuImage { get; set; } = null !;
             public string MenuName{ get; set; }=null!;
             public string CategoryName { get; set; } = null!;
             public int TotalSales { get; set; }

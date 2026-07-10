@@ -31,6 +31,9 @@ public partial class OptionItem
     [Column(TypeName = "datetime")]
     public DateTime? DeletedAt { get; set; }
 
+    [InverseProperty("OptionItem")]
+    public virtual ICollection<MenuDisabledOption> MenuDisabledOptions { get; set; } = new List<MenuDisabledOption>();
+
     [ForeignKey("OptionGroupId")]
     [InverseProperty("OptionItems")]
     public virtual OptionGroup OptionGroup { get; set; } = null!;

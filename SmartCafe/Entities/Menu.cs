@@ -43,6 +43,9 @@ public partial class Menu
     public virtual Category? Category { get; set; }
 
     [InverseProperty("Menu")]
+    public virtual ICollection<MenuDisabledOption> MenuDisabledOptions { get; set; } = new List<MenuDisabledOption>();
+
+    [InverseProperty("Menu")]
     public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 
     [InverseProperty("Menu")]

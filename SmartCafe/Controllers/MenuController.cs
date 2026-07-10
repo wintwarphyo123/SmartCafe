@@ -225,7 +225,10 @@ namespace SmartCafe.Controllers
             {
                 return NotFound(new DefaultResponseModel { Success = false, Message = "Menu Data Not Found" });
             }
-
+            var outOfStockItemIds = await context.MenuDisabledOptions
+                .Where(d=>d.MenuId == id)
+                .Select(d=>d.OptionItemId)
+                .ToListAsync();
             var result = new MenuDetailResponseDto
             {
                 MenuId = menu.MenuId,
@@ -245,7 +248,8 @@ namespace SmartCafe.Controllers
                             {
                                 ItemId = oi.Id,
                                 ItemName = oi.ItemName,
-                                ExtraPrice = oi.ExtraPrice
+                                ExtraPrice = oi.ExtraPrice,
+                                IsAvailable = !outOfStockItemIds.Contains(oi.Id)
                             }).ToList()
                     }).ToList()
             };
@@ -359,31 +363,71 @@ namespace SmartCafe.Controllers
                     Data = null
                 });
             }
-            var alreadyLink = await context.ProductOptionGroups
+            using var transaction = await context.Database.BeginTransactionAsync();
+            try
+            {
+                var alreadyLink = await context.ProductOptionGroups
                 .Where(pod => pod.MenuId == dto.MenuId).ToListAsync();
-            if (alreadyLink.Any())
-            {
-                context.ProductOptionGroups.RemoveRange(alreadyLink);
-            }
-            if(dto.OptionGroupIds != null && dto.OptionGroupIds.Any())
-            {
-                var newLink = dto.OptionGroupIds.Select(id => new ProductOptionGroup
+                if (alreadyLink.Any())
                 {
-                    MenuId = dto.MenuId,
-                    OptionGroupId = id,
-                    CreatedAt = DateTime.UtcNow
-                }).ToList();
-                await context.ProductOptionGroups.AddRangeAsync(newLink);
-            }
-            await context.SaveChangesAsync();
+                    context.ProductOptionGroups.RemoveRange(alreadyLink);
+                }
+                if (dto.OptionGroupIds != null && dto.OptionGroupIds.Any())
+                {
+                    var newLink = dto.OptionGroupIds.Select(id => new ProductOptionGroup
+                    {
+                        MenuId = dto.MenuId,
+                        OptionGroupId = id,
+                        CreatedAt = DateTime.UtcNow
+                    }).ToList();
+                    await context.ProductOptionGroups.AddRangeAsync(newLink);
+                }
+                var currentDisabledItems = await context.MenuDisabledOptions
+            .Where(mdo => mdo.MenuId == dto.MenuId).ToListAsync();
 
-            return Ok(new DefaultResponseModel()
+                if (currentDisabledItems.Any())
+                {
+                    context.MenuDisabledOptions.RemoveRange(currentDisabledItems);
+                }
+                if (dto.OptionsAvailability != null && dto.OptionsAvailability.Any())
+                {
+                    var outOfStockRecords = dto.OptionsAvailability
+                        .Where(item => item.IsAvailable == false)
+                        .Select(item => new MenuDisabledOption // Change this mapping object matching your entity architecture
+                        {
+                            MenuId = dto.MenuId,
+                            OptionItemId = item.OptionItemId,
+                            CreatedAt = DateTime.UtcNow
+                        }).ToList();
+
+                    if (outOfStockRecords.Any())
+                    {
+                        await context.MenuDisabledOptions.AddRangeAsync(outOfStockRecords);
+                    }
+                }
+                await context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Ok(new DefaultResponseModel()
+                {
+                    Success = true,
+                    Statuscode = StatusCodes.Status200OK,
+                    Message = "Successfully",
+                    Data = dto
+                });
+            }
+            catch (Exception ex)
             {
-                Success = true,
-                Statuscode = StatusCodes.Status200OK,
-                Message = "Successfully",
-                Data = dto
-            });
+                await transaction.RollbackAsync();
+                return StatusCode(StatusCodes.Status500InternalServerError, new DefaultResponseModel()
+                {
+                    Success = false,
+                    Statuscode = StatusCodes.Status500InternalServerError,
+                    Message = $"Failed to save updates: {ex.Message}",
+                    Data = null
+                });
+            }
+
         }
         //to join Menu and Option_Group table
 

@@ -1511,6 +1511,22 @@
           }
         }
       },
+      "OptionItemAvailabilityDto": {
+        "type": "object",
+        "properties": {
+          "optionItemId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "isAvailable": {
+            "type": "boolean"
+          }
+        }
+      },
       "OrderItemRequest": {
         "type": "object",
         "properties": {
@@ -1633,6 +1649,12 @@
               ],
               "format": "int32"
             }
+          },
+          "optionsAvailability": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OptionItemAvailabilityDto"
+            }
           }
         }
       },
@@ -1715,6 +1737,9 @@
               "string"
             ],
             "format": "int32"
+          },
+          "menuImage": {
+            "type": "string"
           },
           "menuName": {
             "type": "string"

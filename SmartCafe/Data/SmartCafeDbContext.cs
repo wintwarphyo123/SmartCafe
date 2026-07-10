@@ -28,6 +28,8 @@ public partial class SmartCafeDbContext : DbContext
 
     public virtual DbSet<Menu> Menus { get; set; }
 
+    public virtual DbSet<MenuDisabledOption> MenuDisabledOptions { get; set; }
+
     public virtual DbSet<OptionGroup> OptionGroups { get; set; }
 
     public virtual DbSet<OptionItem> OptionItems { get; set; }
@@ -82,6 +84,17 @@ public partial class SmartCafeDbContext : DbContext
             entity.Property(e => e.IsAvailable).HasDefaultValue(true, "DF__Menu__Is_availab__49C3F6B7");
 
             entity.HasOne(d => d.Category).WithMany(p => p.Menus).HasConstraintName("fk_Menus_Categories");
+        });
+
+        modelBuilder.Entity<MenuDisabledOption>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__MenuDisa__3214EC07624BA940");
+
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
+
+            entity.HasOne(d => d.Menu).WithMany(p => p.MenuDisabledOptions).HasConstraintName("FK_MenuDisabledOptions_Menus");
+
+            entity.HasOne(d => d.OptionItem).WithMany(p => p.MenuDisabledOptions).HasConstraintName("FK_MenuDisabledOptions_OptionItems");
         });
 
         modelBuilder.Entity<OptionGroup>(entity =>

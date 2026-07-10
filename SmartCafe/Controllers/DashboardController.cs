@@ -88,13 +88,15 @@ namespace SmartCafe.Controllers
                 { 
                     oi.MenuId,
                     oi.Menu.MenuName,
-                    oi.Menu.Category.CategoryName
+                    oi.Menu.Category.CategoryName,
+                    oi.Menu.MenuImage
                 })
                 .Select(g => new
                 {
                     g.Key.MenuId,
                     g.Key.MenuName,
                     g.Key.CategoryName,
+                    g.Key.MenuImage,
                     TotalQuantity = g.Sum(oi => oi.Quantity) 
                 });
             int allItemTotalSale = await saleItem.SumAsync(x => x.TotalQuantity);
@@ -106,6 +108,7 @@ namespace SmartCafe.Controllers
             {
                 MenuId = item.MenuId,
                 MenuName = item.MenuName,
+                MenuImage=item.MenuImage,
                 CategoryName = item.CategoryName,
                 TotalSales = item.TotalQuantity,
                 Percentage = allItemTotalSale > 0

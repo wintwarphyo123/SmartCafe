@@ -42,8 +42,14 @@ namespace SmartCafe.DTOs
         {
             public int MenuId {  get; set; } = 0;
             public List<int> OptionGroupIds { get; set; }=new();
+            public List<OptionItemAvailabilityDto> OptionsAvailability { get; set; } = new();
         }
-        
+        public class OptionItemAvailabilityDto
+        {
+            public int OptionItemId { get; set; }
+            public bool IsAvailable { get; set; }
+        }
+
         public class OrderRequest()
         {
             
