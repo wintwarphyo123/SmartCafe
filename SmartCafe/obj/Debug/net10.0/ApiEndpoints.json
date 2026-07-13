@@ -740,6 +740,22 @@
     "Summary": "Get paid orders by kitchen"
   },
   {
+    "ContainingType": "SmartCafe.Controllers.OrderController",
+    "Method": "GetOrderStatusTimeline",
+    "RelativePath": "api/Order/order-status/{orderId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "orderId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "SmartCafe.Controllers.UserController",
     "Method": "GetInfo",
     "RelativePath": "api/User",

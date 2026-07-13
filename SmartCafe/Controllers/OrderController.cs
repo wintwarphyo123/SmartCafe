@@ -27,20 +27,6 @@ namespace SmartCafe.Controllers
             try
             {
                 var today = DateTime.Today;
-                var stateOrder = await context.Orders
-                    .Where(o => o.CreatedAt < today &&
-                               (o.OrderStatus == "Paid" || o.OrderStatus == "Preparing"))
-                    .ToListAsync();
-                if (stateOrder.Any())
-                {
-                    foreach (var order in stateOrder)
-                    {
-                        order.OrderStatus = "Cancelled";
-                        order.UpdatedAt = DateTime.UtcNow;
-                        order.Note = (order.Note ?? "") + " [System Auto-Cancelled: Leftover from previous day]";
-                    }
-                    await context.SaveChangesAsync();
-                }
                 var query = context.Orders.AsQueryable();
                 if (!string.Equals(status, "All", StringComparison.OrdinalIgnoreCase))
                 {
@@ -339,7 +325,29 @@ namespace SmartCafe.Controllers
             return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 fileName);
         }
-       
+
+        [HttpGet("order-status/{orderId}")]
+        public async Task<IActionResult> GetOrderStatusTimeline(int orderId)
+        {
+            var today = DateTime.Today; 
+
+            var order = await context.Orders
+                .Where(o => o.OrderId == orderId && o.CreatedAt >= today) 
+                .Select(o => new { o.OrderId, o.OrderStatus, o.CreatedAt })
+                .FirstOrDefaultAsync();
+
+            if (order == null)
+                return NotFound("No order for today");
+
+            return Ok(new DefaultResponseModel()
+            {
+                Success=true,
+                Statuscode = StatusCodes.Status200OK,
+                Message="order status",
+                Data=order
+            });
+        }
+
         [HttpPost]
         [EndpointSummary("Create Order")]
         public async Task<IActionResult> PlaceOrder(RequestDtos.OrderRequest orderDto)
@@ -522,12 +530,17 @@ namespace SmartCafe.Controllers
                 var today = DateTime.UtcNow.Date;
 
                 bool hasOrdersInQueue = await context.Orders
-        .AnyAsync(o => o.OrderStatus == "Paid" || o.OrderStatus == "Preparing" && o.CreatedAt < order.CreatedAt && o.OrderId != order.OrderId);
+                .AnyAsync(o => o.OrderStatus == "Paid" || o.OrderStatus == "Preparing" 
+                         && o.CreatedAt.Date == today 
+                         && o.CreatedAt < order.CreatedAt 
+                         && o.OrderId != order.OrderId);
                 bool isKitchenBusy = await context.Orders
                     .AnyAsync(o => o.OrderStatus == "Preparing" && o.CreatedAt.Date == today);
                 string finalStatus = (!hasOrdersInQueue && !isKitchenBusy) ? "Preparing" : "Paid" ;
                 order.OrderStatus = finalStatus;
                 order.Note = $"Paid via KPay/WavePay (Txn ID: {request.TransitionId})";
+                order.UpdatedAt = DateTime.UtcNow;
+                await context.SaveChangesAsync();
 
                 var hubPayload = new
                 {
@@ -541,7 +554,7 @@ namespace SmartCafe.Controllers
                     hasOrdersInQueue=hasOrdersInQueue
                 };
 
-                await context.SaveChangesAsync();
+                
                 await hubContext.Clients.All.SendAsync("newOrderCreated",hubPayload );
 
                 return Ok(new DefaultResponseModel()
@@ -624,15 +637,17 @@ namespace SmartCafe.Controllers
 
             orderData.OrderStatus = OrderStatus.Ready.ToString();
             orderData.UpdatedAt = DateTime.UtcNow;
+
             var today = DateTime.Today;
             var nextWaitingOrder = await context.Orders
-            .Where(o => o.OrderStatus == "Pending" && o.CreatedAt.Date == today)
+            .Where(o => o.OrderStatus == "Paid" && o.CreatedAt.Date == today)
             .OrderBy(o => o.CreatedAt) 
             .FirstOrDefaultAsync();
 
             if (nextWaitingOrder != null)
             {
                 nextWaitingOrder.OrderStatus = "Preparing";
+                nextWaitingOrder.UpdatedAt = DateTime.UtcNow;
             }
             await context.SaveChangesAsync();
             var statusPayload = new
@@ -644,6 +659,18 @@ namespace SmartCafe.Controllers
                 message = "Order is completd and ready for pickup/delivery."
             };
             await hubContext.Clients.All.SendAsync("orderStatusUpdated", statusPayload);
+            if (nextWaitingOrder != null)
+            {
+                bool queueRemaining = await context.Orders.AnyAsync(o => (o.OrderStatus == "Paid" || o.OrderStatus == "Preparing") 
+                && o.CreatedAt.Date == today && o.OrderId != nextWaitingOrder.OrderId);
+                await hubContext.Clients.All.SendAsync("orderStatusUpdated", new
+                {
+                    orderId = nextWaitingOrder.OrderId,
+                    orderNumber = nextWaitingOrder.OrderNumber,
+                    orderStatus = nextWaitingOrder.OrderStatus,
+                    hasOrdersInQueue = queueRemaining
+                });
+            }
             return Ok(new DefaultResponseModel()
             {
                 Success = true,

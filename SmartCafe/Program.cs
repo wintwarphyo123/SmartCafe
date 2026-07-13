@@ -92,6 +92,7 @@ builder.Services.AddScoped<ExportService>();
 builder.Services.AddScoped<IConvertion, Convertion>();//Service folder
 builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<IJwtService,JwtService>();
+builder.Services.AddHostedService<OrderCleanService>();
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.
