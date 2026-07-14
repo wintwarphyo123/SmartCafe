@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SmartCafe.Data;
 using SmartCafe.DTOs;
@@ -7,10 +8,12 @@ using SmartCafe.Models;
 
 namespace SmartCafe.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class OptionItemController(SmartCafeDbContext context):ControllerBase
     {
+        [AllowAnonymous]
         [HttpGet]
         [EndpointSummary("Get Option Items")]
         public async Task<IActionResult> GetOptionItems()
@@ -47,7 +50,45 @@ namespace SmartCafe.Controllers
                 });
             }
         }
+        [Authorize(Roles = "Admin")]
+        [HttpGet("Deleted")]
+        [EndpointSummary("Get Deleted Data")]
+        public async Task<IActionResult> GetDeletedData()
+        {
+            var itemData = await context.OptionItems
+                .Where(i => i.DeletedAt != null)
+                .Select(i => new ResponseDtos.ResponseOptionItem()
+                {
+                    Id = i.Id,
+                    ItemName = i.ItemName,
+                    ExtraPrice = i.ExtraPrice,
+                    OptionGroupId = i.OptionGroupId,
+                    Status = i.Status,
+                    GroupName = i.OptionGroup.GroupName ?? "No Category"
+                }).ToListAsync();
+            if (itemData.Any())
+            {
+                return Ok(new DefaultResponseModel()
+                {
+                    Success = true,
+                    Statuscode = StatusCodes.Status200OK,
+                    Message = "Data exist",
+                    Data = itemData
+                });
+            }
+            else
+            {
+                return NotFound(new DefaultResponseModel()
+                {
+                    Success = false,
+                    Statuscode = StatusCodes.Status404NotFound,
+                    Message = "No Data exist",
+                    Data = null
 
+                });
+            }
+        }
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [EndpointSummary("Create New Option Item")]
         public async Task<IActionResult> CreateOptionItem(RequestDtos.RequestOptionItem itemdto)
@@ -113,7 +154,7 @@ namespace SmartCafe.Controllers
                 });
             }
         }
-
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         [EndpointSummary("Update Option Item")]
         public async Task<IActionResult> UpdateItem(int id,RequestDtos.RequestOptionItem itemDto)
@@ -177,14 +218,13 @@ namespace SmartCafe.Controllers
                 });
             }
         }
-
-        [HttpPut("{id}/update-status")]
-        [EndpointSummary("UpdateStatus")]
-        public async Task<IActionResult> UpdateStatus(int id)
+        [Authorize(Roles = "Admin")]
+        [HttpPut("{id}/Restore")]
+        [EndpointSummary("Restore Deleted Data")]
+        public async Task<IActionResult> RestoreData(int id)
         {
-            var optionItemData = await context.OptionItems
-                .FirstOrDefaultAsync(o => o.Id == id);
-            if (optionItemData == null)
+            var itemData = await context.OptionItems.FirstOrDefaultAsync(i => i.Id == id);
+            if (itemData == null)
             {
                 return BadRequest(new DefaultResponseModel()
                 {
@@ -194,21 +234,30 @@ namespace SmartCafe.Controllers
                     Data = null
                 });
             }
-            else
+            bool isNameConflict = await context.OptionItems.AnyAsync(i => i.ItemName == itemData.ItemName && i.DeletedAt == null);
+            if (isNameConflict)
             {
-                optionItemData.Status = !optionItemData.Status;
-                context.OptionItems.Update(optionItemData);
-                await context.SaveChangesAsync();
-                return Ok(new DefaultResponseModel()
+                return Conflict(new DefaultResponseModel()
                 {
-                    Success = true,
-                    Statuscode = StatusCodes.Status200OK,
-                    Message = "Status change successfully",
-                    Data =optionItemData
+                    Success = false,
+                    Statuscode = StatusCodes.Status409Conflict,
+                    Message = $"An active option item named '{itemData.ItemName}' already exists.",
+                    Data = null
                 });
             }
-        }
 
+            itemData.DeletedAt = null;
+            context.OptionItems.Update(itemData);
+            await context.SaveChangesAsync();
+            return Ok(new DefaultResponseModel()
+            {
+                Success = true,
+                Statuscode = StatusCodes.Status200OK,
+                Message = "Status change successfully",
+                Data = itemData
+            });
+        }
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         [EndpointSummary("Delete Option Item")]
         public async Task<IActionResult> DeleteItem(int id)

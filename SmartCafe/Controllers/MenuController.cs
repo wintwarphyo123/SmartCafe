@@ -1,46 +1,95 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using SmartCafe.Data;
 using SmartCafe.DTOs;
 using SmartCafe.Entities;
+using SmartCafe.Hubs;
 using SmartCafe.Interfaces;
 using SmartCafe.Models;
 using static SmartCafe.DTOs.ResponseDtos;
 
 namespace SmartCafe.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class MenuController(SmartCafeDbContext context,
         IConvertion convertion,
-        IFileService FileService) :ControllerBase
+        IFileService FileService,
+        IHubContext<NotificationHubs> hubContext) : ControllerBase
     {
+        [AllowAnonymous]
         [HttpGet]
         [EndpointSummary("Get all Menu Data")]
         public async Task<IActionResult> GetMenuData()
         {
             var menuList = await context.Menus
-                .Where(m=>m.DeletedAt==null)
+                .Where(m => m.DeletedAt == null)
                 .Select(m => new ResponseDtos.AllMenu()
                 {
                     Id = m.MenuId,
                     MenuName = m.MenuName,
-                    MenuImage= m.MenuImage,
-                    Description=m.Description,
-                    Price =m.Price,
-                    Is_available=m.IsAvailable,
+                    MenuImage = m.MenuImage,
+                    Description = m.Description,
+                    Price = m.Price,
+                    Is_available = m.IsAvailable,
                     CategoryId = m.CategoryId,
-                    CategoryName=m.Category !=null ? m.Category.CategoryName:"No Category" 
-                    
+                    CategoryName = (m.Category != null && m.Category.DeletedAt == null)
+                            ? m.Category.CategoryName
+                            : "Deleted Category"
+
                 }).ToListAsync();
-            if(!menuList.Any())
+            if (!menuList.Any())
             {
                 return NotFound(new DefaultResponseModel()
                 {
-                    Success=false,
-                    Statuscode=StatusCodes.Status404NotFound,
-                    Message="Menu Data not found",
-                    Data=null
+                    Success = false,
+                    Statuscode = StatusCodes.Status404NotFound,
+                    Message = "Menu Data not found",
+                    Data = null
+                });
+            }
+            else
+            {
+                return Ok(new DefaultResponseModel()
+                {
+                    Success = true,
+                    Statuscode = StatusCodes.Status200OK,
+                    Message = "Menu data exist",
+                    Data = menuList
+                });
+            }
+        }
+        [AllowAnonymous]
+        [HttpGet("Kiosk-menus")]
+        [EndpointSummary("Get all Menu Data for Customer")]
+        public async Task<IActionResult> GetMenuforCustomer()
+        {
+            var menuList = await context.Menus
+                .Where(m => m.DeletedAt == null
+                && (m.Category == null ||( m.Category.DeletedAt == null )))
+                .Select(m => new ResponseDtos.AllMenu()
+                {
+                    Id = m.MenuId,
+                    MenuName = m.MenuName,
+                    MenuImage = m.MenuImage,
+                    Description = m.Description,
+                    Price = m.Price,
+                    Is_available = (m.Category != null && m.Category.IsActive == false) ? false : m.IsAvailable,
+                    CategoryId = m.CategoryId,
+                    CategoryName = m.Category != null ? m.Category.CategoryName : "No Category"
+
+                }).ToListAsync();
+            if (!menuList.Any())
+            {
+                return NotFound(new DefaultResponseModel()
+                {
+                    Success = false,
+                    Statuscode = StatusCodes.Status404NotFound,
+                    Message = "Menu Data not found",
+                    Data = null
                 });
             }
             else
@@ -55,6 +104,48 @@ namespace SmartCafe.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
+        [HttpGet("Deleted")]
+        [EndpointSummary("Get Deleted Data")]
+        public async Task<IActionResult> GetDeletedData()
+        {
+            var menuData = await context.Menus
+                .Where(m=> m.DeletedAt != null)
+                .Select(m => new ResponseDtos.AllMenu()
+                {
+                    Id = m.MenuId,
+                    MenuName = m.MenuName,
+                    MenuImage = m.MenuImage,
+                    Description = m.Description,
+                    Price = m.Price,
+                    Is_available = m.IsAvailable,
+                    CategoryId = m.CategoryId,
+                    CategoryName = m.Category != null ? m.Category.CategoryName : "No Category"
+
+                }).ToListAsync();
+            if (menuData.Any())
+            {
+                return Ok(new DefaultResponseModel()
+                {
+                    Success = true,
+                    Statuscode = StatusCodes.Status200OK,
+                    Message = "Data exist",
+                    Data = menuData
+                });
+            }
+            else
+            {
+                return NotFound(new DefaultResponseModel()
+                {
+                    Success = false,
+                    Statuscode = StatusCodes.Status404NotFound,
+                    Message = "No Data exist",
+                    Data = null
+
+                });
+            }
+        }
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
         [EndpointSummary("Get Menu By Id")]
         public async Task<IActionResult> GetMenuById(int id)
@@ -92,7 +183,7 @@ namespace SmartCafe.Controllers
                 });
             }
         }
-
+        [Authorize(Roles = "Admin")]
         [HttpGet("Category/{categoryId}")]
         [EndpointSummary("Get Menu By CategoryId")]
         public async Task<IActionResult> GetByCategory(int categoryId)
@@ -124,7 +215,7 @@ namespace SmartCafe.Controllers
                 });
             }
         }
-
+        [AllowAnonymous]
         [HttpGet("all_categories")]
         [EndpointSummary("Get all categories")]
         public async Task<IActionResult> GetAllCategories()
@@ -145,7 +236,7 @@ namespace SmartCafe.Controllers
                 Data=categoryList
             });
         }
-
+        [Authorize(Roles = "Admin")]
         [HttpGet("search/{MenuName}")]
         [EndpointSummary("Get Menu by name")]
         public async Task<IActionResult> GetByName(string MenuName)
@@ -185,7 +276,7 @@ namespace SmartCafe.Controllers
                 });
             }
         }
-
+        [AllowAnonymous]
         [HttpGet("all-option-groups")]
         [EndpointSummary("Get All Option Groups for Dropdown Master List")]
         public async Task<IActionResult> GetAllOptionGroups()
@@ -210,7 +301,7 @@ namespace SmartCafe.Controllers
             return Ok(new DefaultResponseModel { Success = true, Data = optionGroups });
         }
 
-
+        [AllowAnonymous]
         [HttpGet("detail/{id}")]
         [EndpointSummary("Get Menu Detail")]
         public async Task<IActionResult> GetMenuDetail(int id)
@@ -258,7 +349,7 @@ namespace SmartCafe.Controllers
         }
 
 
-
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [EndpointSummary("Create new Menu")]
         public async Task<IActionResult> CreateMenu(RequestDtos.RequestMenu menuDto)
@@ -345,7 +436,7 @@ namespace SmartCafe.Controllers
             });
         
         }
-
+        [Authorize(Roles = "Admin")]
         //for MenuOptionGroup tale , join_table
         [HttpPost("link-option-group")]
         [EndpointSummary("Link an Option Group to a Menu Product")]
@@ -430,7 +521,7 @@ namespace SmartCafe.Controllers
 
         }
         //to join Menu and Option_Group table
-
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         [EndpointSummary("Update Menu Data")]
         public async Task<IActionResult> UpdateMenu(int id,RequestDtos.RequestMenu menuDto)
@@ -511,7 +602,7 @@ namespace SmartCafe.Controllers
             }
 
         }
-
+        [Authorize(Roles = "Admin,KitchenStaff")]
         [HttpPut("{menuId}/Available")]
         [EndpointSummary("Change Menu Status")]
         public async Task<IActionResult> ChangeStatus(int menuId)
@@ -532,6 +623,13 @@ namespace SmartCafe.Controllers
                 menuData.IsAvailable = !menuData.IsAvailable;
                 context.Menus.Update(menuData);
                 await context.SaveChangesAsync();
+                await hubContext.Clients.All.SendAsync("ReceiveMenuUpdate", new
+                {
+                    menuId = menuData.MenuId,
+                    isAvailable = menuData.IsAvailable,
+                    action = "status_change" 
+                });
+                
                 return Ok(new DefaultResponseModel()
                 {
                     Success = true,
@@ -541,8 +639,47 @@ namespace SmartCafe.Controllers
                 });
             }
         }
+        [Authorize(Roles = "Admin")]
+        [HttpPut("{id}/Restore")]
+        [EndpointSummary("Restore Deleted Data")]
+        public async Task<IActionResult> RestoreData(int id)
+        {
+            var menuData = await context.Menus.FirstOrDefaultAsync(m =>m.MenuId == id);
+            if (menuData == null)
+            {
+                return BadRequest(new DefaultResponseModel()
+                {
+                    Success = false,
+                    Statuscode = StatusCodes.Status400BadRequest,
+                    Message = "Data is missed",
+                    Data = null
+                });
+            }
+            bool isNameConflict = await context.Menus.AnyAsync(m => m.MenuName == menuData.MenuName && m.DeletedAt == null);
+            if (isNameConflict)
+            {
+                return Conflict(new DefaultResponseModel()
+                {
+                    Success = false,
+                    Statuscode = StatusCodes.Status409Conflict,
+                    Message = $"An active menu named '{menuData.MenuName}' already exists.",
+                    Data = null
+                });
+            }
 
+            menuData.DeletedAt = null;
+            context.Menus.Update(menuData);
+            await context.SaveChangesAsync();
+            return Ok(new DefaultResponseModel()
+            {
+                Success = true,
+                Statuscode = StatusCodes.Status200OK,
+                Message = "Status change successfully",
+                Data = menuData
+            });
+        }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         [EndpointSummary("Delete menu Data")]
         public async Task<IActionResult> DeleteMenu(int id)

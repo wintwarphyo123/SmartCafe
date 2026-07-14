@@ -1,16 +1,20 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SmartCafe.Data;
 using SmartCafe.DTOs;
-using SmartCafe.Models;
 using SmartCafe.Entities;
+using SmartCafe.Models;
 
 namespace SmartCafe.Controllers
 {
+
+    [Authorize]
     [Route("api/OptionGroup")]
     [ApiController]
     public class OptionGroupController(SmartCafeDbContext context):ControllerBase
     {
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         [EndpointSummary("Get Option Groups")]
         public async Task<IActionResult> GetOptions()
@@ -44,7 +48,43 @@ namespace SmartCafe.Controllers
                 });
             }
         }
+        [Authorize(Roles = "Admin")]
+        [HttpGet("Deleted")]
+        [EndpointSummary("Get Deleted Data")]
+        public async Task<IActionResult> GetDeletedData()
+        {
+            var groupData = await context.OptionGroups
+                .Where(o => o.DeletedAt != null)
+                .Select(o => new ResponseDtos.ResponseOptionGroup()
+                {
+                    Id = o.Id,
+                    GroupName = o.GroupName,
+                    Status = o.Status,
+                })
+                .ToListAsync();
+            if (groupData.Any())
+            {
+                return Ok(new DefaultResponseModel()
+                {
+                    Success = true,
+                    Statuscode = StatusCodes.Status200OK,
+                    Message = "Data exist",
+                    Data = groupData
+                });
+            }
+            else
+            {
+                return NotFound(new DefaultResponseModel()
+                {
+                    Success = false,
+                    Statuscode = StatusCodes.Status404NotFound,
+                    Message = "No Data exist",
+                    Data = null
 
+                });
+            }
+        }
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [EndpointSummary("Create new Option Group")]
         public async Task<IActionResult> CreateOption([FromBody]RequestDtos.RequestOptionGroup optiondto)
@@ -108,7 +148,7 @@ namespace SmartCafe.Controllers
                 }
             }
         }
-
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         [EndpointSummary("Update option group")]
         public async Task<IActionResult> UpdateOption(int id,RequestDtos.RequestOptionGroup optiondto)
@@ -160,14 +200,13 @@ namespace SmartCafe.Controllers
                 }
             }
         }
-
-        [HttpPut("{id}/update-status")]
-        [EndpointSummary("UpdateStatus")]
-        public async Task<IActionResult> UpdateStatus(int id)
+        [Authorize(Roles = "Admin")]
+        [HttpPut("{id}/Restore")]
+        [EndpointSummary("Restore Deleted Data")]
+        public async Task<IActionResult> RestoreData(int id)
         {
-            var optionGroupData = await context.OptionGroups
-                .FirstOrDefaultAsync(o=> o.Id  == id);
-            if (optionGroupData == null)
+            var groupData = await context.OptionGroups.FirstOrDefaultAsync(o => o.Id == id);
+            if (groupData == null)
             {
                 return BadRequest(new DefaultResponseModel()
                 {
@@ -177,21 +216,30 @@ namespace SmartCafe.Controllers
                     Data = null
                 });
             }
-            else
+            bool isNameConflict = await context.OptionGroups.AnyAsync(o => o.GroupName== groupData.GroupName && o.DeletedAt == null);
+            if (isNameConflict)
             {
-                optionGroupData.Status = !optionGroupData.Status;
-                context.OptionGroups.Update(optionGroupData);
-                await context.SaveChangesAsync();
-                return Ok(new DefaultResponseModel()
+                return Conflict(new DefaultResponseModel()
                 {
-                    Success = true,
-                    Statuscode = StatusCodes.Status200OK,
-                    Message = "Status change successfully",
-                    Data = optionGroupData
+                    Success = false,
+                    Statuscode = StatusCodes.Status409Conflict,
+                    Message = $"An active option group named '{groupData.GroupName}' already exists.",
+                    Data = null
                 });
             }
-        }
 
+            groupData.DeletedAt = null;
+            context.OptionGroups.Update(groupData);
+            await context.SaveChangesAsync();
+            return Ok(new DefaultResponseModel()
+            {
+                Success = true,
+                Statuscode = StatusCodes.Status200OK,
+                Message = "Status change successfully",
+                Data = groupData
+            });
+        }
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         [EndpointSummary("Delete Option Group")]
         public async Task<IActionResult> DeleteOption(int id)

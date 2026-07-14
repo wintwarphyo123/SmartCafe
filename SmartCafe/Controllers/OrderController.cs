@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -13,13 +14,14 @@ using System.Text.Json;
 
 namespace SmartCafe.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class OrderController(SmartCafeDbContext context,
         ExportService exportService,
         IHubContext<NotificationHubs> hubContext) :ControllerBase
     {
-
+        [Authorize(Roles = "Admin,KitchenStaff")]
         [HttpGet]
         [EndpointSummary("Get All Orders")]
         public async Task<IActionResult> GetAllOrders([FromQuery] string status = "All")
@@ -56,7 +58,7 @@ namespace SmartCafe.Controllers
                 });
             }
         }
-
+        [Authorize(Roles = "Admin,KitchenStaff")]
         [HttpGet("{id}")]
         [EndpointSummary("Get Order Detail By Id")]
         public async Task<IActionResult> GetOrderById(int id)
@@ -134,7 +136,6 @@ namespace SmartCafe.Controllers
                 OrderId = order.OrderId,
                 OrderNumber = order.OrderNumber,
                 TotalAmount = order.TotalAmount,
-                PhoneNumber = order.PhoneNumber,
                 OrderStatus = order.OrderStatus,
                 Note = order.Note,
                 CreatedAt = order.CreatedAt,
@@ -173,6 +174,7 @@ namespace SmartCafe.Controllers
         }
 
         //get paid order by kitchen
+        [Authorize(Roles = "Admin,KitchenStaff")]
         [HttpGet("Kitchen_Queue")]
         [EndpointSummary("Get paid orders by kitchen")]
         public async Task<IActionResult> GetPaidOrders()
@@ -199,7 +201,6 @@ namespace SmartCafe.Controllers
                 TotalAmount = order.TotalAmount,
                 OrderStatus = order.OrderStatus.ToString(),
                 Note = order.Note,
-                PhoneNumber=order.PhoneNumber,
                 CreatedAt = order.CreatedAt,
                 UpdatedAt= order.UpdatedAt,
                 OrderItems = order.OrderItems.Select(item => new ResponseDtos.OrderItemResponseDto
@@ -221,7 +222,7 @@ namespace SmartCafe.Controllers
                 Data = orderData
             });
         }
-        
+        [Authorize(Roles = "Admin")]
         [HttpGet("filter")]
         [EndpointSummary("to filter orders by Date, Status")]
         public async Task<IActionResult> FilterOrders(
@@ -252,7 +253,6 @@ namespace SmartCafe.Controllers
                     TotalAmount = order.TotalAmount,
                     OrderStatus = order.OrderStatus.ToString(),
                     Note = order.Note,
-                    PhoneNumber=order.PhoneNumber,
                     CreatedAt = order.CreatedAt,
                     UpdatedAt= order.UpdatedAt,
                     OrderItems = order.OrderItems.Select(item => new ResponseDtos.OrderItemResponseDto
@@ -284,6 +284,7 @@ namespace SmartCafe.Controllers
             }
         }
         //remain
+        [Authorize(Roles = "Admin")]
         [HttpPost("excel")]
         [EndpointSummary("export excel")]
         [EndpointDescription("order report")]
@@ -325,7 +326,7 @@ namespace SmartCafe.Controllers
             return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 fileName);
         }
-
+        [AllowAnonymous]
         [HttpGet("order-status/{orderId}")]
         public async Task<IActionResult> GetOrderStatusTimeline(int orderId)
         {
@@ -333,37 +334,36 @@ namespace SmartCafe.Controllers
 
             var order = await context.Orders
                 .Where(o => o.OrderId == orderId && o.CreatedAt >= today) 
-                .Select(o => new { o.OrderId, o.OrderStatus, o.CreatedAt })
+                .Select(o => new { o.OrderId, o.OrderNumber, o.OrderStatus, o.CreatedAt })
                 .FirstOrDefaultAsync();
 
             if (order == null)
                 return NotFound("No order for today");
+
+            var timelineData = new Dictionary<string, object>
+    {
+        { "orderId", order.OrderId },
+        { "orderNumber", order.OrderNumber},
+        { "orderStatus", order.OrderStatus },
+        { "createdAt", DateTime.SpecifyKind(order.CreatedAt, DateTimeKind.Utc).ToString("o") }
+    };
 
             return Ok(new DefaultResponseModel()
             {
                 Success=true,
                 Statuscode = StatusCodes.Status200OK,
                 Message="order status",
-                Data=order
+                Data=timelineData
             });
         }
-
+        [AllowAnonymous]
         [HttpPost]
         [EndpointSummary("Create Order")]
         public async Task<IActionResult> PlaceOrder(RequestDtos.OrderRequest orderDto)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(orderDto.PhoneNumber))
-                {
-                    return BadRequest(new DefaultResponseModel()
-                    {
-                        Success = false,
-                        Statuscode = StatusCodes.Status400BadRequest,
-                        Message = "Phone Number is required",
-                        Data = null
-                    });
-                }
+                
 
                 List<OrderItem> orderList = new List<OrderItem>();
                 decimal totalAmount = 0;
@@ -411,7 +411,6 @@ namespace SmartCafe.Controllers
 
                     totalAmount += (singleItemPrice * item.Quantity);
 
-                    // ✔️ FIX 1: Serialize as a valid JSON Array instead of raw comma-separated string
                     var jsonString = item.OptionItemSelectedIds != null && item.OptionItemSelectedIds.Any()
                         ? JsonSerializer.Serialize(item.OptionItemSelectedIds)
                         : "[]";
@@ -428,8 +427,7 @@ namespace SmartCafe.Controllers
 
                 var orderData = new Order()
                 {
-                    OrderNumber = "ORD-" + DateTime.Now.ToString("yyyyMMddHHmmss"),
-                    PhoneNumber = orderDto.PhoneNumber,
+                    OrderNumber = "ORD-" + DateTime.UtcNow.ToString("yyyyMMddHHmmss"),
                     TotalAmount = totalAmount,
                     CreatedAt = DateTime.UtcNow,
                     OrderStatus = OrderStatus.Paid.ToString()
@@ -452,7 +450,6 @@ namespace SmartCafe.Controllers
                     OrderNumber = orderData.OrderNumber,
                     TotalAmount = orderData.TotalAmount,
                     OrderStatus = orderData.OrderStatus,
-                    PhoneNumber = orderData.PhoneNumber,
                     CreatedAt = orderData.CreatedAt,
                     UpdatedAt = orderData.UpdatedAt,
                     OrderItems = orderList.Select(item => {
@@ -500,6 +497,7 @@ namespace SmartCafe.Controllers
             }
         }
         //payment
+        [AllowAnonymous]
         [HttpPut("confirmPayment")]
         [EndpointSummary("Confirm payment")]
         public async Task<IActionResult> ConfirmPayment(RequestDtos.ConfirmPaymentRequest request)
@@ -548,7 +546,6 @@ namespace SmartCafe.Controllers
                     orderNumber = order.OrderNumber,
                     totalAmount = order.TotalAmount,
                     orderStatus = order.OrderStatus,
-                    phoneNumber = order.PhoneNumber,
                     note = order.Note,
                     createdAt = order.CreatedAt,
                     hasOrdersInQueue=hasOrdersInQueue
@@ -580,7 +577,7 @@ namespace SmartCafe.Controllers
                 });
             }
         }
-
+        [Authorize(Roles = "KitchenStaff")]
         [HttpPut("{orderId}/prepare")]
         [EndpointSummary("Prepare Order")]
         public async Task<IActionResult> StartPreparingOrder(int orderId)
@@ -605,7 +602,6 @@ namespace SmartCafe.Controllers
                 orderId = orderData.OrderId,
                 orderNumber = orderData.OrderNumber,
                 orderStatus = orderData.OrderStatus,
-                phoneNumber = orderData.PhoneNumber,
                 message = "Kitchen has started preparing your order."
             };
             await hubContext.Clients.All.SendAsync("orderStatusUpdated", statusPayload);
@@ -618,7 +614,7 @@ namespace SmartCafe.Controllers
                 Data = orderData
             });
         }
-
+        [Authorize(Roles = "KitchenStaff")]
         [HttpPut("{orderId}/complete")]
         [EndpointSummary("Complete Order")]
         public async Task<IActionResult> CompleteOrder(int orderId)
@@ -655,7 +651,6 @@ namespace SmartCafe.Controllers
                 orderId = orderData.OrderId,
                 orderNumber = orderData.OrderNumber,
                 orderStatus = orderData.OrderStatus,
-                phoneNumber = orderData.PhoneNumber,
                 message = "Order is completd and ready for pickup/delivery."
             };
             await hubContext.Clients.All.SendAsync("orderStatusUpdated", statusPayload);

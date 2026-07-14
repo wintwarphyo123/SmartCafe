@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,7 @@ using SmartCafe.Services;
 
 namespace SmartCafe.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class UserController(SmartCafeDbContext context,
@@ -19,6 +21,7 @@ namespace SmartCafe.Controllers
         IConvertion convertion,
         IFileService FileService) :ControllerBase
     {
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         [EndpointSummary("GetUserInformation")]
         public async Task<IActionResult> GetInfo()
@@ -66,7 +69,7 @@ namespace SmartCafe.Controllers
             }
         }
 
-
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [EndpointSummary("Create User")]
         public async Task<IActionResult> CreateUser(UserInfoModel model)
@@ -185,7 +188,7 @@ namespace SmartCafe.Controllers
                 Data = userInfo
             });
         }
-
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         [EndpointSummary("Update User")]
         public async Task<IActionResult> UpdateUserInfo(string id,UserInfoModel model)
@@ -277,7 +280,7 @@ namespace SmartCafe.Controllers
                 });
             }
         }
-
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}/update-status")]
         [EndpointSummary("update status")]
         public async Task<IActionResult> UpdateStatus(string id)
@@ -307,7 +310,7 @@ namespace SmartCafe.Controllers
                 });
             }
         }
-
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         [EndpointSummary("Delete User")]
         public async Task<IActionResult> DeleteUser(string id)

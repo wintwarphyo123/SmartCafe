@@ -51,10 +51,7 @@ namespace SmartCafe.DTOs
         }
 
         public class OrderRequest()
-        {
-            
-            public string? PhoneNumber { get; set; } = null!;
-           
+        {  
             public List<OrderItemRequest> Items { get; set; } = new();
         }
 

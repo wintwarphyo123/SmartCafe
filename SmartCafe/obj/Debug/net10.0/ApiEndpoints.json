@@ -113,6 +113,23 @@
   },
   {
     "ContainingType": "SmartCafe.Controllers.CategoryController",
+    "Method": "RestoreData",
+    "RelativePath": "api/Category/{id}/Restore",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [],
+    "Summary": "Restore Deleted Data"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.CategoryController",
     "Method": "UpdateStatus",
     "RelativePath": "api/Category/{id}/update-status",
     "HttpMethod": "PUT",
@@ -127,6 +144,17 @@
     ],
     "ReturnTypes": [],
     "Summary": "UpdateStatus"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.CategoryController",
+    "Method": "GetDeletedData",
+    "RelativePath": "api/Category/Deleted",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [],
+    "Summary": "Get Deleted Data"
   },
   {
     "ContainingType": "SmartCafe.Controllers.DashboardController",
@@ -280,6 +308,23 @@
   },
   {
     "ContainingType": "SmartCafe.Controllers.MenuController",
+    "Method": "RestoreData",
+    "RelativePath": "api/Menu/{id}/Restore",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [],
+    "Summary": "Restore Deleted Data"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.MenuController",
     "Method": "ChangeStatus",
     "RelativePath": "api/Menu/{menuId}/Available",
     "HttpMethod": "PUT",
@@ -336,6 +381,17 @@
   },
   {
     "ContainingType": "SmartCafe.Controllers.MenuController",
+    "Method": "GetDeletedData",
+    "RelativePath": "api/Menu/Deleted",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [],
+    "Summary": "Get Deleted Data"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.MenuController",
     "Method": "GetMenuDetail",
     "RelativePath": "api/Menu/detail/{id}",
     "HttpMethod": "GET",
@@ -350,6 +406,17 @@
     ],
     "ReturnTypes": [],
     "Summary": "Get Menu Detail"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.MenuController",
+    "Method": "GetMenuforCustomer",
+    "RelativePath": "api/Menu/Kiosk-menus",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [],
+    "Summary": "Get all Menu Data for Customer"
   },
   {
     "ContainingType": "SmartCafe.Controllers.MenuController",
@@ -454,8 +521,8 @@
   },
   {
     "ContainingType": "SmartCafe.Controllers.OptionGroupController",
-    "Method": "UpdateStatus",
-    "RelativePath": "api/OptionGroup/{id}/update-status",
+    "Method": "RestoreData",
+    "RelativePath": "api/OptionGroup/{id}/Restore",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
@@ -467,7 +534,18 @@
       }
     ],
     "ReturnTypes": [],
-    "Summary": "UpdateStatus"
+    "Summary": "Restore Deleted Data"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.OptionGroupController",
+    "Method": "GetDeletedData",
+    "RelativePath": "api/OptionGroup/Deleted",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [],
+    "Summary": "Get Deleted Data"
   },
   {
     "ContainingType": "SmartCafe.Controllers.OptionItemController",
@@ -538,8 +616,8 @@
   },
   {
     "ContainingType": "SmartCafe.Controllers.OptionItemController",
-    "Method": "UpdateStatus",
-    "RelativePath": "api/OptionItem/{id}/update-status",
+    "Method": "RestoreData",
+    "RelativePath": "api/OptionItem/{id}/Restore",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
@@ -551,7 +629,18 @@
       }
     ],
     "ReturnTypes": [],
-    "Summary": "UpdateStatus"
+    "Summary": "Restore Deleted Data"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.OptionItemController",
+    "Method": "GetDeletedData",
+    "RelativePath": "api/OptionItem/Deleted",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [],
+    "Summary": "Get Deleted Data"
   },
   {
     "ContainingType": "SmartCafe.Controllers.OrderController",

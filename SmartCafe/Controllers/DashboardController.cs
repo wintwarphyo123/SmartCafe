@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SmartCafe.Data;
 using SmartCafe.DTOs;
@@ -7,6 +8,7 @@ using static SmartCafe.DTOs.ResponseDtos;
 
 namespace SmartCafe.Controllers
 {
+    [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
     [ApiController]
     public class DashboardController(SmartCafeDbContext context):ControllerBase
@@ -18,8 +20,8 @@ namespace SmartCafe.Controllers
             try
             {
                 var today = DateTime.Today;
-                var menuCount =await context.Menus.CountAsync(m => m.IsAvailable == true);
-                var categoryCount = await context.Categories.CountAsync(c => c.IsActive == true);
+                var menuCount =await context.Menus.CountAsync(m => m.IsAvailable == true && m.DeletedAt==null);
+                var categoryCount = await context.Categories.CountAsync(c => c.IsActive == true && c.DeletedAt==null);
                 var orderCount = await context.Orders.CountAsync(o=> o.Note != null && o.CreatedAt >= today);
                 var dailyRevenue = await context.Orders
                     .Where(o => o.Note != null && o.CreatedAt >= today)
@@ -47,7 +49,7 @@ namespace SmartCafe.Controllers
                 return StatusCode(500, new { success = false, message = "Internal server error." });
             }
         }
-
+       
         [HttpGet("First_five_orders")]
         [EndpointSummary("Get first five orders")]
         public async Task<IActionResult> GetFirstFiveOrders()
@@ -73,7 +75,7 @@ namespace SmartCafe.Controllers
                 Data = orders
             });
         }
-
+        
         [HttpGet("trending_item")]
         [EndpointSummary("Get trending items")]
         [ProducesResponseType(typeof(List<TrendingItemResponseModel>), StatusCodes.Status200OK)]
@@ -126,7 +128,7 @@ namespace SmartCafe.Controllers
         }
 
 
-
+       
         [HttpGet("Revenue_Overview")]
         [EndpointSummary("Get Revenue Overview for Day, Month, and Year")]
         public async Task<IActionResult> GetRevenue([FromQuery] string period = "month")

@@ -103,6 +103,19 @@
         }
       }
     },
+    "/api/Category/Deleted": {
+      "get": {
+        "tags": [
+          "Category"
+        ],
+        "summary": "Get Deleted Data",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Category/{id}": {
       "get": {
         "tags": [
@@ -206,6 +219,34 @@
           "Category"
         ],
         "summary": "UpdateStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Category/{id}/Restore": {
+      "put": {
+        "tags": [
+          "Category"
+        ],
+        "summary": "Restore Deleted Data",
         "parameters": [
           {
             "name": "id",
@@ -368,6 +409,32 @@
           },
           "required": true
         },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Menu/Kiosk-menus": {
+      "get": {
+        "tags": [
+          "Menu"
+        ],
+        "summary": "Get all Menu Data for Customer",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Menu/Deleted": {
+      "get": {
+        "tags": [
+          "Menu"
+        ],
+        "summary": "Get Deleted Data",
         "responses": {
           "200": {
             "description": "OK"
@@ -641,6 +708,34 @@
         }
       }
     },
+    "/api/Menu/{id}/Restore": {
+      "put": {
+        "tags": [
+          "Menu"
+        ],
+        "summary": "Restore Deleted Data",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/OptionGroup": {
       "get": {
         "tags": [
@@ -678,6 +773,19 @@
           },
           "required": true
         },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/OptionGroup/Deleted": {
+      "get": {
+        "tags": [
+          "OptionGroup"
+        ],
+        "summary": "Get Deleted Data",
         "responses": {
           "200": {
             "description": "OK"
@@ -759,12 +867,12 @@
         }
       }
     },
-    "/api/OptionGroup/{id}/update-status": {
+    "/api/OptionGroup/{id}/Restore": {
       "put": {
         "tags": [
           "OptionGroup"
         ],
-        "summary": "UpdateStatus",
+        "summary": "Restore Deleted Data",
         "parameters": [
           {
             "name": "id",
@@ -824,6 +932,19 @@
           },
           "required": true
         },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/OptionItem/Deleted": {
+      "get": {
+        "tags": [
+          "OptionItem"
+        ],
+        "summary": "Get Deleted Data",
         "responses": {
           "200": {
             "description": "OK"
@@ -905,12 +1026,12 @@
         }
       }
     },
-    "/api/OptionItem/{id}/update-status": {
+    "/api/OptionItem/{id}/Restore": {
       "put": {
         "tags": [
           "OptionItem"
         ],
-        "summary": "UpdateStatus",
+        "summary": "Restore Deleted Data",
         "parameters": [
           {
             "name": "id",
@@ -1589,12 +1710,6 @@
       "OrderRequest": {
         "type": "object",
         "properties": {
-          "phoneNumber": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
           "items": {
             "type": "array",
             "items": {

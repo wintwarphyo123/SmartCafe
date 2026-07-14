@@ -23,9 +23,6 @@ public partial class Order
     [Unicode(false)]
     public string OrderStatus { get; set; } = null!;
 
-    [StringLength(50)]
-    public string? PhoneNumber { get; set; }
-
     [StringLength(500)]
     public string? Note { get; set; }
 

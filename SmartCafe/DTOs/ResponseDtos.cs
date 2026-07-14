@@ -77,7 +77,6 @@ namespace SmartCafe.DTOs
             public string OrderNumber { get; set; }= null!;
             public decimal TotalAmount { get; set; }
             public string OrderStatus { get; set; } = null!;
-            public string PhoneNumber { get; set; } = null!;
             public string? Note { get; set; }
             public DateTime CreatedAt { get; set; }
             public DateTime? UpdatedAt { get; set; }

@@ -1,21 +1,27 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using SmartCafe.Data;
 using SmartCafe.DTOs;
 using SmartCafe.Entities;
+using SmartCafe.Hubs;
 using SmartCafe.Interfaces;
 using SmartCafe.Models;
 using SmartCafe.Services;
 namespace SmartCafe.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CategoryController(
         SmartCafeDbContext context,
         IConvertion convertion,
-        IFileService FileService
+        IFileService FileService,
+        IHubContext<NotificationHubs> hubContext
         ) :ControllerBase
     {
+        [AllowAnonymous]
         [HttpGet]
         [EndpointSummary("Get Category Data")]
         public async Task<IActionResult> GetCategories()
@@ -47,11 +53,48 @@ namespace SmartCafe.Controllers
                     Statuscode= StatusCodes.Status404NotFound,
                     Message="No Data exist",
                     Data=null
-                    //Data = Enumerable.Empty<ResponseDtos.AllCategories>()
+                   
                 });
             }
         }
-
+        [Authorize(Roles = "Admin")]
+        [HttpGet("Deleted")]
+        [EndpointSummary("Get Deleted Data")]
+        public async Task<IActionResult> GetDeletedData()
+        {
+            var categoryData = await context.Categories
+                .Where(c => c.DeletedAt != null)
+                .Select(c => new ResponseDtos.AllCategories()
+                {
+                    Id = c.CategoryId,
+                    CategoryName = c.CategoryName,
+                    CategoryImage = c.CategoryImage,
+                    isActive = c.IsActive
+                })
+                .ToListAsync();
+            if(categoryData.Any())
+            {
+                return Ok(new DefaultResponseModel()
+                {
+                    Success = true,
+                    Statuscode = StatusCodes.Status200OK,
+                    Message = "Data exist",
+                    Data = categoryData
+                });
+            }
+            else
+            {
+                return NotFound(new DefaultResponseModel()
+                {
+                    Success = false,
+                    Statuscode = StatusCodes.Status404NotFound,
+                    Message = "No Data exist",
+                    Data = null
+                    
+                });
+            }
+        }
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id:int}")]
         [EndpointSummary("Get category by id")]
         public async Task<IActionResult> FindCategory(int id)
@@ -85,7 +128,7 @@ namespace SmartCafe.Controllers
                 });
             }
         }
-
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [EndpointSummary("Create new Category")]
         public async Task<IActionResult> CreateCategory(RequestDtos.RequestCategory category)
@@ -167,7 +210,7 @@ namespace SmartCafe.Controllers
                 Data = null
             });
         }
-
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         [EndpointSummary("Update Category")]
         public async Task<IActionResult> UpdateCategory(int id, RequestDtos.RequestCategory categorydto)
@@ -241,7 +284,7 @@ namespace SmartCafe.Controllers
                 });
             }
         }
-
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}/update-status")]
         [EndpointSummary("UpdateStatus")]
         public async Task<IActionResult> UpdateStatus(int id)
@@ -263,6 +306,12 @@ namespace SmartCafe.Controllers
                 categoryData.IsActive = !categoryData.IsActive;
                 context.Categories.Update(categoryData);
                 await context.SaveChangesAsync();
+                await hubContext.Clients.All.SendAsync("ReceiveCategoryUpdate", new
+                {
+                    categoryId = categoryData.CategoryId,
+                    isActive = categoryData.IsActive,
+                    action = "status_change"
+                });
                 return Ok(new DefaultResponseModel()
                 {
                     Success = true,
@@ -272,7 +321,46 @@ namespace SmartCafe.Controllers
                 });
             }
         }
-
+        [Authorize(Roles = "Admin")]
+        [HttpPut("{id}/Restore")]
+        [EndpointSummary("Restore Deleted Data")]
+        public async Task<IActionResult> RestoreData(int id)
+        {
+            var catData=await context.Categories.FirstOrDefaultAsync(c=>c.CategoryId == id);
+            if(catData == null)
+            {
+                return BadRequest(new DefaultResponseModel()
+                {
+                    Success = false,
+                    Statuscode = StatusCodes.Status400BadRequest,
+                    Message = "Data is missed",
+                    Data = null
+                });
+            }
+            bool isNameConflict = await context.Categories.AnyAsync(c => c.CategoryName == catData.CategoryName && c.DeletedAt == null);
+            if (isNameConflict)
+            {
+                return Conflict(new DefaultResponseModel()
+                {
+                    Success = false,
+                    Statuscode = StatusCodes.Status409Conflict,
+                    Message = $"An active category named '{catData.CategoryName}' already exists.",
+                    Data = null
+                });
+            }
+            
+                catData.DeletedAt = null;
+                context.Categories.Update(catData);
+                await context.SaveChangesAsync();
+                return Ok(new DefaultResponseModel()
+                {
+                    Success = true,
+                    Statuscode = StatusCodes.Status200OK,
+                    Message = "Status change successfully",
+                    Data = catData
+                });
+        }
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         [EndpointSummary("Delete Category By id")]
         public async Task<IActionResult> DeleteCategory(int id)
