@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SmartCafe")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3e897aa11167ab9a1b4b884503d09d1df99b9393")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+86db4a5008d6c3bad9b45cce935c4162adb6da89")]
 [assembly: System.Reflection.AssemblyProductAttribute("SmartCafe")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SmartCafe")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

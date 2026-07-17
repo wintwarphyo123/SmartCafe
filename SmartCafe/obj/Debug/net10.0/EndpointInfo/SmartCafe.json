@@ -1180,6 +1180,19 @@
         }
       }
     },
+    "/api/Order/ActiveOrders": {
+      "get": {
+        "tags": [
+          "Order"
+        ],
+        "summary": "Get Active Orders",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Order/excel": {
       "post": {
         "tags": [

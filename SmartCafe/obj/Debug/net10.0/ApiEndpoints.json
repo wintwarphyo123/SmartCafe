@@ -729,6 +729,17 @@
   },
   {
     "ContainingType": "SmartCafe.Controllers.OrderController",
+    "Method": "GetActiveOrders",
+    "RelativePath": "api/Order/ActiveOrders",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [],
+    "Summary": "Get Active Orders"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.OrderController",
     "Method": "ConfirmPayment",
     "RelativePath": "api/Order/confirmPayment",
     "HttpMethod": "PUT",

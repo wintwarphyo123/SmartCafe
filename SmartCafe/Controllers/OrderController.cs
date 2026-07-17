@@ -283,7 +283,53 @@ namespace SmartCafe.Controllers
                 });
             }
         }
-        //remain
+        [AllowAnonymous]
+        [HttpGet("ActiveOrders")]
+        [EndpointSummary("Get Active Orders")]
+        public async Task<IActionResult> GetActiveOrders()
+        {
+            try
+            {
+                var taday = DateTime.UtcNow.Date;
+                var activeOrders=await context.Orders
+                    .Where(o=>o.CreatedAt.Date== taday 
+                    && (o.OrderStatus=="Paid" || o.OrderStatus=="Preparing" || o.OrderStatus=="Ready"))
+                    .OrderBy(o=>o.CreatedAt)
+                    .Select(o=>new ResponseDtos.ActiveOrderResponse
+                    {
+                        OrderId = o.OrderId,
+                        OrderNumber= o.OrderNumber,
+                        OrderStatus= o.OrderStatus,
+                        CreatedAt=o.CreatedAt
+                    }).ToListAsync();
+                if(!activeOrders.Any())
+                {
+                    return Ok(new DefaultResponseModel()
+                    {
+                        Success = true,
+                        Statuscode = StatusCodes.Status200OK,
+                        Message = "No Active Order",
+                        Data = new List<ResponseDtos.ActiveOrderResponse>()
+                    });
+                }
+                return Ok(new DefaultResponseModel()
+                {
+                    Success = true,
+                    Statuscode = StatusCodes.Status200OK,
+                    Message = "Active orders retrieved successfully.",
+                    Data = activeOrders
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new DefaultResponseModel()
+                {
+                    Success = false,
+                    Statuscode = StatusCodes.Status500InternalServerError,
+                    Message = "An error occurred while fetching active orders: " + ex.Message
+                });
+            }
+        }
         [Authorize(Roles = "Admin")]
         [HttpPost("excel")]
         [EndpointSummary("export excel")]
@@ -528,7 +574,7 @@ namespace SmartCafe.Controllers
                 var today = DateTime.UtcNow.Date;
 
                 bool hasOrdersInQueue = await context.Orders
-                .AnyAsync(o => o.OrderStatus == "Paid" || o.OrderStatus == "Preparing" 
+                .AnyAsync(o => (o.OrderStatus == "Paid" || o.OrderStatus == "Preparing" )
                          && o.CreatedAt.Date == today 
                          && o.CreatedAt < order.CreatedAt 
                          && o.OrderId != order.OrderId);
@@ -536,7 +582,7 @@ namespace SmartCafe.Controllers
                     .AnyAsync(o => o.OrderStatus == "Preparing" && o.CreatedAt.Date == today);
                 string finalStatus = (!hasOrdersInQueue && !isKitchenBusy) ? "Preparing" : "Paid" ;
                 order.OrderStatus = finalStatus;
-                order.Note = $"Paid via KPay/WavePay (Txn ID: {request.TransitionId})";
+                order.Note = $"Paid (Txn ID: {request.TransitionId})";
                 order.UpdatedAt = DateTime.UtcNow;
                 await context.SaveChangesAsync();
 
@@ -551,8 +597,10 @@ namespace SmartCafe.Controllers
                     hasOrdersInQueue=hasOrdersInQueue
                 };
 
-                
                 await hubContext.Clients.All.SendAsync("newOrderCreated",hubPayload );
+                await hubContext.Clients.All.SendAsync("orderStatusUpdated", hubPayload);
+                await hubContext.Clients.All.SendAsync("orderQueueStatusChanged", new { hasOrdersInQueue = hasOrdersInQueue });
+
 
                 return Ok(new DefaultResponseModel()
                 {

@@ -111,6 +111,14 @@ namespace SmartCafe.DTOs
 
         }
 
+        public class ActiveOrderResponse
+        {
+            public int OrderId {  get; set; }
+            public string OrderNumber { get; set; } = null!;
+            public string OrderStatus { get; set; }= null!;
+            public DateTime CreatedAt { get; set; }
+        }
+
         public class TrendingItemResponseModel
         {
             public int MenuId { get; set; }
