@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
@@ -188,7 +188,7 @@ namespace SmartCafe.Controllers
                 Data = userInfo
             });
         }
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,KitchenStaff")]
         [HttpPut("{id}")]
         [EndpointSummary("Update User")]
         public async Task<IActionResult> UpdateUserInfo(string id,UserInfoModel model)
@@ -209,6 +209,7 @@ namespace SmartCafe.Controllers
             }
             identityUser.UserName = model.UserName;
             identityUser.Email = model.Email;
+            identityUser.PhoneNumber= model.PhoneNumber;
             var updateResult = await userManager.UpdateAsync(identityUser);
             if (!updateResult.Succeeded)
             {
@@ -257,28 +258,28 @@ namespace SmartCafe.Controllers
                 userInfo.ProfileImage = userInfo.ProfileImage;
             }
 
-            bool isSaved = await context.SaveChangesAsync() > 0;
+            await context.SaveChangesAsync();
 
-            if (isSaved)
+            //userId, username,status,joinDate,role,profileImage
+            //var responseData = new ResponseDtos.ResponseUser
+            //{
+            //    UserId = userInfo.UserId,
+            //    UserName = userInfo.UserName,
+            //    Status = userInfo.Status ?? false,
+            //    Password = string.Empty,
+            //    PhoneNumber = model.PhoneNumber,
+            //    JoinDate = userInfo.JoinDate ?? DateOnly.FromDateTime(DateTime.UtcNow),
+            //    Role = userInfo.Role,
+            //    ProfileImage = userInfo.ProfileImage
+            //};
+
+            return Ok(new DefaultResponseModel()
             {
-                return Ok(new DefaultResponseModel()
-                {
-                    Success = true,
-                    Statuscode = StatusCodes.Status201Created,
-                    Message = "Category updated successfully",
-                    Data = userInfo
-                });
-            }
-            else
-            {
-                return BadRequest(new DefaultResponseModel()
-                {
-                    Success = false,
-                    Statuscode = StatusCodes.Status400BadRequest,
-                    Message = "Category updated failed",
-                    Data = null
-                });
-            }
+                Success = true,
+                Statuscode = StatusCodes.Status200OK,
+                Message = "User updated successfully",
+                Data = userInfo
+            });
         }
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}/update-status")]
@@ -310,16 +311,18 @@ namespace SmartCafe.Controllers
                 });
             }
         }
+
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         [EndpointSummary("Delete User")]
         public async Task<IActionResult> DeleteUser(string id)
         {
+            // 1. Security Check: Prevent self-deletion
             var currentUserName = User.Identity?.Name;
             if (!string.IsNullOrEmpty(currentUserName))
             {
                 var currentUser = await userManager.FindByNameAsync(currentUserName);
-                if(currentUser!=null && currentUser.Id == id)
+                if (currentUser != null && currentUser.Id == id)
                 {
                     return BadRequest(new DefaultResponseModel()
                     {
@@ -330,41 +333,60 @@ namespace SmartCafe.Controllers
                     });
                 }
             }
-            var userInfo = await context.UserInfos.FindAsync(id);
-            if (userInfo == null)
+
+            // 2. Find Identity User (AspNetUsers)
+            var user = await userManager.FindByIdAsync(id);
+            if (user == null)
             {
                 return NotFound(new DefaultResponseModel()
                 {
                     Success = false,
                     Statuscode = StatusCodes.Status404NotFound,
-                    Message = "Data does not exist",
+                    Message = "User does not exist",
                     Data = null
                 });
             }
-            else
+
+            // 3. Remove UserInfos record
+            var userInfo = await context.UserInfos.FirstOrDefaultAsync(u => u.UserId == id);
+            if (userInfo != null)
             {
-                
-                userInfo.Status = false;
-                context.UserInfos.Update(userInfo);
-                bool isSaved = await context.SaveChangesAsync() > 0;
-                if (isSaved)
+                context.UserInfos.Remove(userInfo);
+            }
+
+            // 4. Clear related Refresh Tokens
+            var refreshTokens = await context.RefreshTokens
+                .Where(rt => rt.UserId == id)
+                .ToListAsync();
+            if (refreshTokens.Any())
+            {
+                context.RefreshTokens.RemoveRange(refreshTokens);
+            }
+
+            // 5. Save EF Core database changes
+            await context.SaveChangesAsync();
+
+            // 6. Permanently delete user from Identity (AspNetUsers)
+            var result = await userManager.DeleteAsync(user);
+
+            if (result.Succeeded)
+            {
+                return Ok(new DefaultResponseModel()
                 {
-                    return Ok(new DefaultResponseModel()
-                    {
-                        Success = true,
-                        Statuscode = StatusCodes.Status200OK,
-                        Message = "Deleted successfully",
-                        Data = null
-                    });
-                }
-                return BadRequest(new DefaultResponseModel()
-                {
-                    Success = false,
-                    Statuscode = StatusCodes.Status400BadRequest,
-                    Message = "Delete failed",
+                    Success = true,
+                    Statuscode = StatusCodes.Status200OK,
+                    Message = "User deleted permanently",
                     Data = null
                 });
             }
+
+            return BadRequest(new DefaultResponseModel()
+            {
+                Success = false,
+                Statuscode = StatusCodes.Status400BadRequest,
+                Message = "Delete failed",
+                Data = null
+            });
         }
     }
 }

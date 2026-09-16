@@ -18,6 +18,23 @@
   },
   {
     "ContainingType": "SmartCafe.Controllers.AuthController",
+    "Method": "Logout",
+    "RelativePath": "api/Auth/logout",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "refreshToken",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [],
+    "Summary": "Logout \u2014 revoke refresh token"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.AuthController",
     "Method": "UserProfile",
     "RelativePath": "api/Auth/profile",
     "HttpMethod": "GET",
@@ -25,7 +42,24 @@
     "Order": 0,
     "Parameters": [],
     "ReturnTypes": [],
-    "Summary": "get user profile"
+    "Summary": "Get user profile"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.AuthController",
+    "Method": "Refresh",
+    "RelativePath": "api/Auth/refresh",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "SmartCafe.DTOs.RequestDtos\u002BRefreshTokenRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [],
+    "Summary": "Refresh Access Token"
   },
   {
     "ContainingType": "SmartCafe.Controllers.CategoryController",
@@ -155,6 +189,22 @@
     "Parameters": [],
     "ReturnTypes": [],
     "Summary": "Get Deleted Data"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.CategoryController",
+    "Method": "ImportCategories",
+    "RelativePath": "api/Category/import-categories",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "file",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
   },
   {
     "ContainingType": "SmartCafe.Controllers.DashboardController",
@@ -325,6 +375,23 @@
   },
   {
     "ContainingType": "SmartCafe.Controllers.MenuController",
+    "Method": "ChangeArchived",
+    "RelativePath": "api/Menu/{menuId}/Archived",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "menuId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [],
+    "Summary": "Change Menu Archived Status"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.MenuController",
     "Method": "ChangeStatus",
     "RelativePath": "api/Menu/{menuId}/Available",
     "HttpMethod": "PUT",
@@ -339,6 +406,23 @@
     ],
     "ReturnTypes": [],
     "Summary": "Change Menu Status"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.MenuController",
+    "Method": "ChangeSpeial",
+    "RelativePath": "api/Menu/{menuId}/IsSpecial",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "menuId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [],
+    "Summary": "Change Menu Special Status"
   },
   {
     "ContainingType": "SmartCafe.Controllers.MenuController",
@@ -409,6 +493,17 @@
   },
   {
     "ContainingType": "SmartCafe.Controllers.MenuController",
+    "Method": "GetSpecialDataForAdmin",
+    "RelativePath": "api/Menu/IsSpecial",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [],
+    "Summary": "Get Special Data for Admin"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.MenuController",
     "Method": "GetMenuforCustomer",
     "RelativePath": "api/Menu/Kiosk-menus",
     "HttpMethod": "GET",
@@ -437,6 +532,33 @@
   },
   {
     "ContainingType": "SmartCafe.Controllers.MenuController",
+    "Method": "GetRecommendationsByMenuId",
+    "RelativePath": "api/Menu/Recommend/{menuId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "menuId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[SmartCafe.DTOs.ResponseDtos\u002BResponseRecommendation, SmartCafe, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ],
+    "Summary": "GetRecommendationMenu"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.MenuController",
     "Method": "GetByName",
     "RelativePath": "api/Menu/search/{MenuName}",
     "HttpMethod": "GET",
@@ -451,6 +573,17 @@
     ],
     "ReturnTypes": [],
     "Summary": "Get Menu by name"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.MenuController",
+    "Method": "GetSpecialData",
+    "RelativePath": "api/Menu/Special",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [],
+    "Summary": "Get Special Data"
   },
   {
     "ContainingType": "SmartCafe.Controllers.OptionGroupController",
@@ -546,6 +679,23 @@
     "Parameters": [],
     "ReturnTypes": [],
     "Summary": "Get Deleted Data"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.OptionGroupController",
+    "Method": "ImportOptionGroup",
+    "RelativePath": "api/OptionGroup/import-optionGroups",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "file",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [],
+    "Summary": "Import option groups from Excel file"
   },
   {
     "ContainingType": "SmartCafe.Controllers.OptionItemController",
@@ -712,6 +862,23 @@
   },
   {
     "ContainingType": "SmartCafe.Controllers.OrderController",
+    "Method": "ChangeToPaidState",
+    "RelativePath": "api/Order/{orderId}/paid",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "orderId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [],
+    "Summary": "Paid Order"
+  },
+  {
+    "ContainingType": "SmartCafe.Controllers.OrderController",
     "Method": "StartPreparingOrder",
     "RelativePath": "api/Order/{orderId}/prepare",
     "HttpMethod": "PUT",
@@ -737,23 +904,6 @@
     "Parameters": [],
     "ReturnTypes": [],
     "Summary": "Get Active Orders"
-  },
-  {
-    "ContainingType": "SmartCafe.Controllers.OrderController",
-    "Method": "ConfirmPayment",
-    "RelativePath": "api/Order/confirmPayment",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "request",
-        "Type": "SmartCafe.DTOs.RequestDtos\u002BConfirmPaymentRequest",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [],
-    "Summary": "Confirm payment"
   },
   {
     "ContainingType": "SmartCafe.Controllers.OrderController",

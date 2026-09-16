@@ -38,12 +38,22 @@ public partial class Menu
     [Column("DeletedAT", TypeName = "datetime")]
     public DateTime? DeletedAt { get; set; }
 
+    public bool? Archived { get; set; }
+
+    public bool? IsSpecial { get; set; }
+
     [ForeignKey("CategoryId")]
     [InverseProperty("Menus")]
     public virtual Category? Category { get; set; }
 
     [InverseProperty("Menu")]
     public virtual ICollection<MenuDisabledOption> MenuDisabledOptions { get; set; } = new List<MenuDisabledOption>();
+
+    [InverseProperty("MainMenu")]
+    public virtual ICollection<MenuRecommendation> MenuRecommendationMainMenus { get; set; } = new List<MenuRecommendation>();
+
+    [InverseProperty("RecommendedMenu")]
+    public virtual ICollection<MenuRecommendation> MenuRecommendationRecommendedMenus { get; set; } = new List<MenuRecommendation>();
 
     [InverseProperty("Menu")]
     public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();

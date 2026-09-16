@@ -88,11 +88,12 @@ builder.Services.AddAuthentication(options =>
         };
 });
 builder.Services.AddScoped<ExportService>();
-
+builder.Services.AddScoped<ImportService>();
 builder.Services.AddScoped<IConvertion, Convertion>();//Service folder
 builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<IJwtService,JwtService>();
 builder.Services.AddHostedService<OrderCleanService>();
+builder.Services.AddHostedService<RecommendationSchedulerService>();
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.

@@ -20,5 +20,13 @@ namespace SmartCafe.Hubs
         {
             await Clients.All.SendAsync("ReceiveMenuUpdate", menuUpdateInfo);
         }
+        public async Task UpdateMenuSpecial(Object menuUpdateInfo)
+        {
+            await Clients.All.SendAsync("ReceiveMenuSpecial", menuUpdateInfo);
+        }
+        public async Task UpdateMenuArchived(Object menuUpdateInfo)
+        {
+            await Clients.All.SendAsync("RecevieMenuArchived", menuUpdateInfo);
+        }
     }
 }

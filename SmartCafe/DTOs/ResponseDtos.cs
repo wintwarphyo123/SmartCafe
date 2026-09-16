@@ -23,6 +23,8 @@ namespace SmartCafe.DTOs
             public bool? Is_available {  get; set; }
             public int? CategoryId {  get; set; }
             public string? CategoryName {  get; set; }
+            public bool? IsSpecial { get; set; }
+            public bool? Archived { get; set; }
         }
         public class AllCategoryForDropDown()
         {
@@ -127,6 +129,30 @@ namespace SmartCafe.DTOs
             public string CategoryName { get; set; } = null!;
             public int TotalSales { get; set; }
             public double Percentage { get; set; }
+        }
+        //userId, username,status,joinDate,role,profileImage
+        public class ResponseUser
+        {
+            public string UserId { get; set; } = null!;
+            public string UserName { get; set; } = null!;
+            public string Password { get; set; } = null!;
+            public string PhoneNumber { get; set; } = null!;
+            public bool Status { get; set; }
+            public DateOnly JoinDate { get; set; } 
+            public string Role { get; set; } = null!;
+            public string ProfileImage { get; set; } = null!;
+
+        }
+
+        public class ResponseRecommendation
+        {
+            public int MainMenuId { get; set; }
+            public int RecommendedMenuId { get; set; }
+            public string RecommendedMenuName { get; set; } = string.Empty;
+            public decimal RecommendedMenuPrice { get; set; }
+            public string? RecommendedMenuImageUrl { get; set; }
+            public int PairingCount { get; set; }
+            public double SupportScore { get; set; }
         }
     }
 }

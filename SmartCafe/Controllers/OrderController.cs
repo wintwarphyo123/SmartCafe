@@ -405,12 +405,10 @@ namespace SmartCafe.Controllers
         [AllowAnonymous]
         [HttpPost]
         [EndpointSummary("Create Order")]
-        public async Task<IActionResult> PlaceOrder(RequestDtos.OrderRequest orderDto)
+        public async Task<IActionResult> PlaceOrder([FromBody] RequestDtos.OrderRequest orderDto)
         {
             try
             {
-                
-
                 List<OrderItem> orderList = new List<OrderItem>();
                 decimal totalAmount = 0;
 
@@ -470,13 +468,13 @@ namespace SmartCafe.Controllers
                     };
                     orderList.Add(orderItem);
                 }
-
+               
                 var orderData = new Order()
                 {
                     OrderNumber = "ORD-" + DateTime.UtcNow.ToString("yyyyMMddHHmmss"),
                     TotalAmount = totalAmount,
-                    CreatedAt = DateTime.UtcNow,
-                    OrderStatus = OrderStatus.Paid.ToString()
+                    CreatedAt = DateTime.UtcNow.AddHours(6.5),
+                    OrderStatus = OrderStatus.Pending.ToString()
                 };
 
                 await context.Orders.AddAsync(orderData);
@@ -543,88 +541,127 @@ namespace SmartCafe.Controllers
             }
         }
         //payment
-        [AllowAnonymous]
-        [HttpPut("confirmPayment")]
-        [EndpointSummary("Confirm payment")]
-        public async Task<IActionResult> ConfirmPayment(RequestDtos.ConfirmPaymentRequest request)
+        //[AllowAnonymous]
+        //[HttpPut("confirmPayment")]
+        //[EndpointSummary("Confirm payment")]
+        //public async Task<IActionResult> ConfirmPayment(RequestDtos.ConfirmPaymentRequest request)
+        //{
+        //    try
+        //    {
+        //        var order = await context.Orders.FirstOrDefaultAsync(o => o.OrderId == request.OrderId);
+        //        if (order == null)
+        //        {
+        //            return NotFound(new DefaultResponseModel()
+        //            {
+        //                Success = false,
+        //                Statuscode = StatusCodes.Status404NotFound,
+        //                Message = "OrderId doesn't exist",
+        //                Data = null
+        //            });
+        //        }
+        //        if (order.OrderStatus == "Preparing" || order.OrderStatus == "Ready")
+        //        {
+        //            return BadRequest(new DefaultResponseModel()
+        //            {
+        //                Success = false,
+        //                Statuscode = StatusCodes.Status400BadRequest,
+        //                Message = "Order has already been processed or completed.",
+        //                Data = null
+        //            });
+        //        }
+        //        var today = DateTime.UtcNow.Date;
+
+        //        bool hasOrdersInQueue = await context.Orders
+        //        .AnyAsync(o => (o.OrderStatus == "Paid" || o.OrderStatus == "Preparing" )
+        //                 && o.CreatedAt.Date == today 
+        //                 && o.CreatedAt < order.CreatedAt 
+        //                 && o.OrderId != order.OrderId);
+        //        bool isKitchenBusy = await context.Orders
+        //            .AnyAsync(o => o.OrderStatus == "Preparing" && o.CreatedAt.Date == today);
+        //        string finalStatus = (!hasOrdersInQueue && !isKitchenBusy) ? "Preparing" : "Paid" ;
+        //        order.OrderStatus = finalStatus;
+        //        order.Note = $"Paid (Txn ID: {request.TransitionId})";
+        //        order.UpdatedAt = DateTime.UtcNow;
+        //        await context.SaveChangesAsync();
+
+        //        var hubPayload = new
+        //        {
+        //            orderId = order.OrderId,
+        //            orderNumber = order.OrderNumber,
+        //            totalAmount = order.TotalAmount,
+        //            orderStatus = order.OrderStatus,
+        //            note = order.Note,
+        //            createdAt = order.CreatedAt,
+        //            hasOrdersInQueue=hasOrdersInQueue
+        //        };
+
+        //        await hubContext.Clients.All.SendAsync("newOrderCreated",hubPayload );
+        //        await hubContext.Clients.All.SendAsync("orderStatusUpdated", hubPayload);
+        //        await hubContext.Clients.All.SendAsync("orderQueueStatusChanged", new { hasOrdersInQueue = hasOrdersInQueue });
+
+
+        //        return Ok(new DefaultResponseModel()
+        //        {
+        //            Success = true,
+        //            Statuscode = StatusCodes.Status200OK,
+        //            Message = "Payment confirmed successfully. Order sent to Kitchen!",
+        //            Data = new
+        //            {
+        //                order = order,
+        //                hasOrdersInQueue = hasOrdersInQueue
+        //            }
+        //        });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        var innerMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+        //        return StatusCode(StatusCodes.Status500InternalServerError, new DefaultResponseModel()
+        //        {
+        //            Success = false,
+        //            Statuscode = StatusCodes.Status500InternalServerError,
+        //            Message = "An error occurred: " + ex.Message
+        //        });
+        //    }
+        //}
+
+        [Authorize(Roles = "KitchenStaff")]
+        [HttpPut("{orderId}/paid")]
+        [EndpointSummary("Paid Order")]
+        public async Task<IActionResult> ChangeToPaidState(int orderId)
         {
-            try
+            var orderData = await context.Orders.FirstOrDefaultAsync(o => o.OrderId == orderId);
+            if (orderData == null)
             {
-                var order = await context.Orders.FirstOrDefaultAsync(o => o.OrderId == request.OrderId);
-                if (order == null)
-                {
-                    return NotFound(new DefaultResponseModel()
-                    {
-                        Success = false,
-                        Statuscode = StatusCodes.Status404NotFound,
-                        Message = "OrderId doesn't exist",
-                        Data = null
-                    });
-                }
-                if (order.OrderStatus == "Preparing" || order.OrderStatus == "Ready")
-                {
-                    return BadRequest(new DefaultResponseModel()
-                    {
-                        Success = false,
-                        Statuscode = StatusCodes.Status400BadRequest,
-                        Message = "Order has already been processed or completed.",
-                        Data = null
-                    });
-                }
-                var today = DateTime.UtcNow.Date;
-
-                bool hasOrdersInQueue = await context.Orders
-                .AnyAsync(o => (o.OrderStatus == "Paid" || o.OrderStatus == "Preparing" )
-                         && o.CreatedAt.Date == today 
-                         && o.CreatedAt < order.CreatedAt 
-                         && o.OrderId != order.OrderId);
-                bool isKitchenBusy = await context.Orders
-                    .AnyAsync(o => o.OrderStatus == "Preparing" && o.CreatedAt.Date == today);
-                string finalStatus = (!hasOrdersInQueue && !isKitchenBusy) ? "Preparing" : "Paid" ;
-                order.OrderStatus = finalStatus;
-                order.Note = $"Paid (Txn ID: {request.TransitionId})";
-                order.UpdatedAt = DateTime.UtcNow;
-                await context.SaveChangesAsync();
-
-                var hubPayload = new
-                {
-                    orderId = order.OrderId,
-                    orderNumber = order.OrderNumber,
-                    totalAmount = order.TotalAmount,
-                    orderStatus = order.OrderStatus,
-                    note = order.Note,
-                    createdAt = order.CreatedAt,
-                    hasOrdersInQueue=hasOrdersInQueue
-                };
-
-                await hubContext.Clients.All.SendAsync("newOrderCreated",hubPayload );
-                await hubContext.Clients.All.SendAsync("orderStatusUpdated", hubPayload);
-                await hubContext.Clients.All.SendAsync("orderQueueStatusChanged", new { hasOrdersInQueue = hasOrdersInQueue });
-
-
-                return Ok(new DefaultResponseModel()
-                {
-                    Success = true,
-                    Statuscode = StatusCodes.Status200OK,
-                    Message = "Payment confirmed successfully. Order sent to Kitchen!",
-                    Data = new
-                    {
-                        order = order,
-                        hasOrdersInQueue = hasOrdersInQueue
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                var innerMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
-                return StatusCode(StatusCodes.Status500InternalServerError, new DefaultResponseModel()
+                return BadRequest(new DefaultResponseModel()
                 {
                     Success = false,
-                    Statuscode = StatusCodes.Status500InternalServerError,
-                    Message = "An error occurred: " + ex.Message
+                    Statuscode = StatusCodes.Status400BadRequest,
+                    Message = "Order can't be confirm",
+                    Data = null
                 });
             }
+
+            orderData.OrderStatus = OrderStatus.Paid.ToString();
+            orderData.UpdatedAt = DateTime.UtcNow;
+            await context.SaveChangesAsync();
+            var statusPayload = new
+            {
+                orderId = orderData.OrderId,
+                orderNumber = orderData.OrderNumber,
+                orderStatus = orderData.OrderStatus,
+                message = "The order change to paid state, waiting for prepare."
+            };
+            await hubContext.Clients.All.SendAsync("orderStatusUpdated", statusPayload);
+
+            return Ok(new DefaultResponseModel()
+            {
+                Success = true,
+                Statuscode = StatusCodes.Status200OK,
+                Message = "order is already paid",
+                Data = orderData
+            });
         }
+
         [Authorize(Roles = "KitchenStaff")]
         [HttpPut("{orderId}/prepare")]
         [EndpointSummary("Prepare Order")]
@@ -662,6 +699,7 @@ namespace SmartCafe.Controllers
                 Data = orderData
             });
         }
+
         [Authorize(Roles = "KitchenStaff")]
         [HttpPut("{orderId}/complete")]
         [EndpointSummary("Complete Order")]

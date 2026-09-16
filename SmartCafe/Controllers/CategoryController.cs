@@ -210,6 +210,57 @@ namespace SmartCafe.Controllers
                 Data = null
             });
         }
+        //skip
+        [HttpPost("import-categories")]
+        public async Task<IActionResult> ImportCategories(
+    IFormFile file,
+    [FromServices] ImportService importService)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("Please upload a valid Excel file.");
+
+            if (!file.FileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
+                return BadRequest("Only .xlsx files are allowed.");
+
+            using var stream = file.OpenReadStream();
+
+            // 💡 KeyValuePair<ExcelHeader, ModelPropertyName> Mapping
+            var mappings = new KeyValuePair<string, string>[]
+            {
+        new("Ingredient Name", nameof(Category.CategoryName)),
+        new("Current Stock", nameof(Category.IsActive)),
+        new("Unit", nameof(Category.CategoryImage)),
+            };
+
+            // 1. Excel Stream မှ Ingredient List သို့ Parse ပြောင်းခြင်း
+            List<Category> importedIngredients = importService.ImportFromExcelStream<Category>(stream, mappings);
+
+            if (!importedIngredients.Any())
+            {
+                return BadRequest("No valid data found in the uploaded file.");
+            }
+
+            var existingName = await context.Categories.Select(i => i.CategoryName.ToLower().Trim()).ToListAsync();
+            var newIngredients = importedIngredients.Where(i => !existingName.Contains(i.CategoryName.ToLower().Trim())).ToList();
+            if (!newIngredients.Any())
+            {
+                return Ok(new { Success = true, Message = "All ingredients already exist in the database. Nothing imported." });
+            }
+            foreach (var item in importedIngredients)
+            {
+                item.CreatedAt = DateTime.UtcNow;
+            }
+            // 2. Database ထဲသို့ Bulk Add ပြုလုပ်ခြင်း
+            await context.Categories.AddRangeAsync(importedIngredients);
+            await context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                Success = true,
+                Message = $"Successfully imported {importedIngredients.Count} ingredients into system."
+            });
+        }
+
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         [EndpointSummary("Update Category")]
@@ -242,7 +293,7 @@ namespace SmartCafe.Controllers
                 IFormFile formFile = new FormFile(memoryStream, 0, memoryStream.Length, "fileUpload", fileName);
 
                 // Save image
-                _ = await FileService.WriteImageDocker(formFile, existingCategory.CategoryId.ToString(), "category");
+                _ = await FileService.WriteImageDocker(formFile, $"{existingCategory.CategoryId}", "category");
 
                 // Set new image path
                 existingCategory.CategoryImage = $"images/category/{fileName}";
@@ -301,10 +352,19 @@ namespace SmartCafe.Controllers
                     Data = null
                 });
             }
-            else
-            {
+            
                 categoryData.IsActive = !categoryData.IsActive;
-                context.Categories.Update(categoryData);
+               // context.Categories.Update(categoryData);
+                if (categoryData.IsActive==false)
+                {
+                    var relatedMenu=await context.Menus
+                        .Where(m=>m.CategoryId == id && m.IsAvailable==true)
+                        .ToListAsync();
+                    foreach(var menu in relatedMenu)
+                    {
+                        menu.IsAvailable = false;
+                    }
+                }
                 await context.SaveChangesAsync();
                 await hubContext.Clients.All.SendAsync("ReceiveCategoryUpdate", new
                 {
@@ -317,9 +377,14 @@ namespace SmartCafe.Controllers
                     Success = true,
                     Statuscode = StatusCodes.Status200OK,
                     Message = "Status change successfully",
-                    Data = categoryData
+                    Data = new
+                    {
+                        categoryId = categoryData.CategoryId,
+                        categoryName = categoryData.CategoryName,
+                        isActive = categoryData.IsActive
+                    }
                 });
-            }
+            
         }
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}/Restore")]

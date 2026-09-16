@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.ML;
 using SmartCafe.Data;
 using SmartCafe.DTOs;
 using SmartCafe.Entities;
@@ -25,7 +26,7 @@ namespace SmartCafe.Controllers
         [EndpointSummary("Get all Menu Data")]
         public async Task<IActionResult> GetMenuData()
         {
-            var menuList = await context.Menus
+            var menuList = await context.Menus.AsNoTracking()
                 .Where(m => m.DeletedAt == null)
                 .Select(m => new ResponseDtos.AllMenu()
                 {
@@ -38,7 +39,9 @@ namespace SmartCafe.Controllers
                     CategoryId = m.CategoryId,
                     CategoryName = (m.Category != null && m.Category.DeletedAt == null)
                             ? m.Category.CategoryName
-                            : "Deleted Category"
+                            : "Deleted Category",
+                    IsSpecial= m.IsSpecial,
+                    Archived=m.Archived
 
                 }).ToListAsync();
             if (!menuList.Any())
@@ -62,14 +65,17 @@ namespace SmartCafe.Controllers
                 });
             }
         }
+
         [AllowAnonymous]
         [HttpGet("Kiosk-menus")]
         [EndpointSummary("Get all Menu Data for Customer")]
         public async Task<IActionResult> GetMenuforCustomer()
         {
+
+            
             var menuList = await context.Menus
-                .Where(m => m.DeletedAt == null
-                && (m.Category == null ||( m.Category.DeletedAt == null )))
+                .Where(m => m.DeletedAt == null && m.IsSpecial==false && m.Archived==false
+                && (m.Category == null || (m.Category.DeletedAt == null)))
                 .Select(m => new ResponseDtos.AllMenu()
                 {
                     Id = m.MenuId,
@@ -79,7 +85,9 @@ namespace SmartCafe.Controllers
                     Price = m.Price,
                     Is_available = (m.Category != null && m.Category.IsActive == false) ? false : m.IsAvailable,
                     CategoryId = m.CategoryId,
-                    CategoryName = m.Category != null ? m.Category.CategoryName : "No Category"
+                    CategoryName = m.Category != null ? m.Category.CategoryName : "No Category",
+                    IsSpecial=m.IsSpecial,
+                    Archived=m.Archived
 
                 }).ToListAsync();
             if (!menuList.Any())
@@ -104,12 +112,12 @@ namespace SmartCafe.Controllers
             }
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,KitchenStaff")]
         [HttpGet("Deleted")]
         [EndpointSummary("Get Deleted Data")]
         public async Task<IActionResult> GetDeletedData()
         {
-            var menuData = await context.Menus
+            var menuData = await context.Menus.AsNoTracking()
                 .Where(m=> m.DeletedAt != null)
                 .Select(m => new ResponseDtos.AllMenu()
                 {
@@ -120,7 +128,9 @@ namespace SmartCafe.Controllers
                     Price = m.Price,
                     Is_available = m.IsAvailable,
                     CategoryId = m.CategoryId,
-                    CategoryName = m.Category != null ? m.Category.CategoryName : "No Category"
+                    CategoryName = m.Category != null ? m.Category.CategoryName : "No Category",
+                    IsSpecial=m.IsSpecial,
+                    Archived=m.Archived
 
                 }).ToListAsync();
             if (menuData.Any())
@@ -145,7 +155,96 @@ namespace SmartCafe.Controllers
                 });
             }
         }
-        [Authorize(Roles = "Admin")]
+
+        [AllowAnonymous]
+        [HttpGet("Special")]
+        [EndpointSummary("Get Special Data")]
+        public async Task<IActionResult> GetSpecialData()
+        {
+            var menuData = await context.Menus.AsNoTracking()
+                .Where(m => m.DeletedAt == null && m.IsSpecial==true && m.Archived==false)
+                .Select(m => new ResponseDtos.AllMenu()
+                {
+                    Id = m.MenuId,
+                    MenuName = m.MenuName,
+                    MenuImage = m.MenuImage,
+                    Description = m.Description,
+                    Price = m.Price,
+                    Is_available = m.IsAvailable,
+                    CategoryId = m.CategoryId,
+                    CategoryName = m.Category != null ? m.Category.CategoryName : "No Category",
+                    IsSpecial = m.IsSpecial,
+                    Archived = m.Archived
+
+                }).ToListAsync();
+            if (menuData.Any())
+            {
+                return Ok(new DefaultResponseModel()
+                {
+                    Success = true,
+                    Statuscode = StatusCodes.Status200OK,
+                    Message = "Data exist",
+                    Data = menuData
+                });
+            }
+            else
+            {
+                return NotFound(new DefaultResponseModel()
+                {
+                    Success = false,
+                    Statuscode = StatusCodes.Status404NotFound,
+                    Message = "No Data exist",
+                    Data = null
+
+                });
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpGet("IsSpecial")]
+        [EndpointSummary("Get Special Data for Admin")]
+        public async Task<IActionResult> GetSpecialDataForAdmin()
+        {
+            var menuData = await context.Menus.AsNoTracking()
+                .Where(m => m.DeletedAt == null && m.IsSpecial == true)
+                .Select(m => new ResponseDtos.AllMenu
+                {
+                    Id = m.MenuId,
+                    MenuName = m.MenuName,
+                    MenuImage = m.MenuImage,
+                    Description = m.Description,
+                    Price = m.Price,
+                    Is_available = m.IsAvailable,
+                    CategoryId = m.CategoryId,
+                    CategoryName = m.Category != null ? m.Category.CategoryName : "No Category",
+                    IsSpecial = m.IsSpecial,
+                    Archived = m.Archived
+
+                }).ToListAsync();
+            if (menuData.Any())
+            {
+                return Ok(new DefaultResponseModel()
+                {
+                    Success = true,
+                    Statuscode = StatusCodes.Status200OK,
+                    Message = "Data exist",
+                    Data = menuData
+                });
+            }
+            else
+            {
+                return NotFound(new DefaultResponseModel()
+                {
+                    Success = false,
+                    Statuscode = StatusCodes.Status404NotFound,
+                    Message = "No Data exist",
+                    Data = null
+
+                });
+            }
+        }
+
+        [Authorize(Roles = "Admin,KitchenStaff")]
         [HttpGet("{id}")]
         [EndpointSummary("Get Menu By Id")]
         public async Task<IActionResult> GetMenuById(int id)
@@ -172,7 +271,9 @@ namespace SmartCafe.Controllers
                     Description=menuData.Description,
                     Price = menuData.Price,
                     CategoryId = menuData.CategoryId,
-                    Is_available = menuData.IsAvailable
+                    Is_available = menuData.IsAvailable,
+                    IsSpecial = menuData.IsSpecial,
+                    Archived= menuData.Archived,
                 };
                 return Ok(new DefaultResponseModel()
                 {
@@ -183,7 +284,7 @@ namespace SmartCafe.Controllers
                 });
             }
         }
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,KitchenStaff")]
         [HttpGet("Category/{categoryId}")]
         [EndpointSummary("Get Menu By CategoryId")]
         public async Task<IActionResult> GetByCategory(int categoryId)
@@ -220,7 +321,7 @@ namespace SmartCafe.Controllers
         [EndpointSummary("Get all categories")]
         public async Task<IActionResult> GetAllCategories()
         {
-            var categoryList = await context.Categories
+            var categoryList = await context.Categories.AsNoTracking()
                 .Where(c => c.DeletedAt == null)
                 .Select(c=>new AllCategoryForDropDown
                 {
@@ -236,7 +337,9 @@ namespace SmartCafe.Controllers
                 Data=categoryList
             });
         }
-        [Authorize(Roles = "Admin")]
+
+
+        [Authorize(Roles = "Admin,KitchenStaff")]
         [HttpGet("search/{MenuName}")]
         [EndpointSummary("Get Menu by name")]
         public async Task<IActionResult> GetByName(string MenuName)
@@ -282,7 +385,7 @@ namespace SmartCafe.Controllers
         public async Task<IActionResult> GetAllOptionGroups()
         {
             
-            var optionGroups = await context.OptionGroups
+            var optionGroups = await context.OptionGroups.AsNoTracking()
                 .Where(og => og.DeletedAt == null) 
                 .Select(og => new OptionGroupDto
                 {
@@ -306,49 +409,83 @@ namespace SmartCafe.Controllers
         [EndpointSummary("Get Menu Detail")]
         public async Task<IActionResult> GetMenuDetail(int id)
         {
-            var menu = await context.Menus
-                .Include(m => m.ProductOptionGroups) 
-                    .ThenInclude(mog => mog.OptionGroup) 
-                .Where(m => m.MenuId == id && m.DeletedAt == null)
-                .FirstOrDefaultAsync();
-
-            if (menu == null)
+            
+            var menu=await context.ViewMenuDetailOptions.AsNoTracking().Where(m=>m.MenuId==id).ToListAsync();
+            if (!menu.Any())
             {
-                return NotFound(new DefaultResponseModel { Success = false, Message = "Menu Data Not Found" });
+                var menuExist = await context.Menus.AnyAsync(m => m.MenuId == id && m.DeletedAt == null);
+                if (!menuExist)
+                {
+                    return NotFound(new DefaultResponseModel()
+                    {
+                        Success = false,
+                        Statuscode = StatusCodes.Status404NotFound,
+                        Message = "menu doesn't exist",
+                        Data = null
+                    });
+                }
             }
-            var outOfStockItemIds = await context.MenuDisabledOptions
-                .Where(d=>d.MenuId == id)
-                .Select(d=>d.OptionItemId)
-                .ToListAsync();
+            var firstRow = menu.FirstOrDefault();
+
             var result = new MenuDetailResponseDto
             {
-                MenuId = menu.MenuId,
-                MenuName = menu.MenuName,
-                Price = menu.Price,
-                Description = menu.Description,
+                MenuId = id,
+                MenuName = firstRow?.MenuName ?? string.Empty,
+                Price = firstRow?.MenuPrice ?? 0,
+                Description = firstRow?.MenuDescription ?? string.Empty,
 
-                OptionGroups = menu.ProductOptionGroups
-                    .Select(mog => new OptionGroupDto
+                OptionGroups = menu
+            .Where(g => g.GroupId.HasValue) // Filter out NULL group rows
+            .GroupBy(g => new { GroupId = g.GroupId!.Value, g.GroupName })
+            .Select(mog => new OptionGroupDto
+            {
+                GroupId = mog.Key.GroupId,
+                GroupName = mog.Key.GroupName ?? string.Empty,
+
+                OptionItems = mog
+                    .Where(oi => oi.ItemId.HasValue) // Filter out NULL item rows
+                    .Select(oi => new OptionItemDto
                     {
-                        GroupId = mog.OptionGroup!.Id,
-                        GroupName = mog.OptionGroup.GroupName,
-
-                        OptionItems = context.OptionItems
-                            .Where(oi => oi.OptionGroupId == mog.OptionGroupId && oi.DeletedAt==null)
-                            .Select(oi => new OptionItemDto
-                            {
-                                ItemId = oi.Id,
-                                ItemName = oi.ItemName,
-                                ExtraPrice = oi.ExtraPrice,
-                                IsAvailable = !outOfStockItemIds.Contains(oi.Id)
-                            }).ToList()
+                        ItemId = oi.ItemId!.Value,
+                        ItemName = oi.ItemName ?? string.Empty,
+                        ExtraPrice = oi.ExtraPrice ?? 0,
+                        IsAvailable = oi.IsAvailable ?? false
                     }).ToList()
+            }).ToList()
             };
 
             return Ok(new DefaultResponseModel { Success = true, Data = result });
         }
 
+        [AllowAnonymous]
+        [HttpGet("Recommend/{menuId}")]
+        [EndpointSummary("GetRecommendationMenu")]
+        public async Task<ActionResult<IEnumerable<ResponseRecommendation>>> GetRecommendationsByMenuId(int menuId)
+        {
+            var recommendations = await context.MenuRecommendations
+                .Where(r => r.MainMenuId == menuId)
+                .Include(r => r.RecommendedMenu) // Navigation property ဖြင့် Menu အချက်အလက်များ ဆွဲယူခြင်း
+                .OrderByDescending(r => r.SupportScore)
+                .Select(r => new ResponseRecommendation
+                {
+                    MainMenuId = r.MainMenuId,
+                    RecommendedMenuId = r.RecommendedMenuId,
+                    RecommendedMenuName = r.RecommendedMenu.MenuName,
+                    RecommendedMenuPrice = (decimal)r.RecommendedMenu.Price,
+                    RecommendedMenuImageUrl = r.RecommendedMenu.MenuImage,
+                    PairingCount = r.PairingCount,
+                    SupportScore = r.SupportScore
+                })
+                .ToListAsync();
 
+            if (!recommendations.Any())
+            {
+                return NotFound(new { Message = "No recommendations found for this item." });
+            }
+
+            return Ok(recommendations);
+        }
+    
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [EndpointSummary("Create new Menu")]
@@ -360,8 +497,10 @@ namespace SmartCafe.Controllers
                 Description = menuDto.Description,
                 CategoryId = menuDto.CategoryId,
                 Price = menuDto.Price,
-                IsAvailable = true,
+                IsAvailable = menuDto.Is_available,
                 CreatedAt = DateTime.UtcNow,
+                IsSpecial = menuDto.IsSpecial,
+                Archived = false
             };
             context.Menus.Add(menuData);
             bool isSaved = await context.SaveChangesAsync() > 0;
@@ -374,11 +513,17 @@ namespace SmartCafe.Controllers
                     {
                         base64Data = base64Data.Split(',')[1];
                     }
-
                     string extension = convertion.GetFileExtension(base64Data);
-                    string fileName = $"{menuData.MenuId}{extension}";
+
+                    // လက်ရှိအချိန် (yyyyMMddHHmmssfff) ပါဝင်သော ဖိုင်အမည်သတ်မှတ်ခြင်း
+                    string timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmssfff");
+                    string fileName = $"{menuData.MenuId}_{timestamp}{extension}";
 
                     menuData.MenuImage = $"images/menu/{fileName}";
+                    //string extension = convertion.GetFileExtension(base64Data);
+                    //string fileName = $"{menuData.MenuId}{extension}";
+
+                   // menuData.MenuImage = $"images/menu/{fileName}";
 
                     byte[] imageBytes = Convert.FromBase64String(base64Data);
                     using (MemoryStream memoryStream = new(imageBytes))
@@ -391,7 +536,7 @@ namespace SmartCafe.Controllers
                         };
 
                         string fileServiceError = string.Empty;
-                        bool imageSavedResult = await FileService.WriteImageDocker(formFile, $"{menuData.MenuId}", "menu");
+                        bool imageSavedResult = await FileService.WriteImageDocker(formFile, $"{menuData.MenuId}_{timestamp}", "menu");
                         if (!imageSavedResult)
                         {
                             return BadRequest(new DefaultResponseModel()
@@ -414,7 +559,9 @@ namespace SmartCafe.Controllers
                         Description = menuData.Description,
                         Price = menuData.Price,
                         Is_available = menuData.IsAvailable,
-                        CategoryId = menuData.CategoryId
+                        CategoryId = menuData.CategoryId,
+                        IsSpecial= menuData.IsSpecial,
+                        Archived= menuData.Archived,
                     };
 
                     return Ok(new DefaultResponseModel()
@@ -524,7 +671,7 @@ namespace SmartCafe.Controllers
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         [EndpointSummary("Update Menu Data")]
-        public async Task<IActionResult> UpdateMenu(int id,RequestDtos.RequestMenu menuDto)
+        public async Task<IActionResult> UpdateMenu(int id, RequestDtos.RequestMenu menuDto)
         {
             Menu? existingMenu = await context.Menus.FirstOrDefaultAsync(c => c.MenuId == id);
             if (existingMenu == null)
@@ -535,73 +682,176 @@ namespace SmartCafe.Controllers
                     Statuscode = StatusCodes.Status404NotFound,
                     Message = "Data doesn't exist",
                     Data = null
-
                 });
             }
+
             existingMenu.MenuName = menuDto.MenuName;
-            existingMenu.Price= menuDto.Price;
+            existingMenu.Price = menuDto.Price;
             existingMenu.CategoryId = menuDto.CategoryId;
-            existingMenu.Description= menuDto.Description;
+            existingMenu.Description = menuDto.Description;
             existingMenu.UpdatedAt = DateTime.UtcNow;
-            existingMenu.IsAvailable= true;
+            existingMenu.IsAvailable = true;
 
-            if (!string.IsNullOrEmpty(menuDto.MenuImage) &&
-               !menuDto.MenuImage.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            // ပုံအသစ် (Base64) ပါလာမှသာ စစ်ဆေးပြီး သိမ်းဆည်းရန်
+            if (!string.IsNullOrWhiteSpace(menuDto.MenuImage) &&
+                !menuDto.MenuImage.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
+                !menuDto.MenuImage.StartsWith("images/", StringComparison.OrdinalIgnoreCase) &&
+                !menuDto.MenuImage.StartsWith("/images/", StringComparison.OrdinalIgnoreCase))
             {
-                string extension = convertion.GetFileExtension(menuDto.MenuImage);
-                string fileName = $"{existingMenu.MenuId}{extension}";
+                string base64Data = menuDto.MenuImage;
+                
+                if (base64Data.Contains(","))
+                {
+                    base64Data = base64Data.Split(',')[1];
+                }
 
-                byte[] imageBytes = Convert.FromBase64String(menuDto.MenuImage);
-                using MemoryStream memoryStream = new(imageBytes);
-                IFormFile formFile = new FormFile(memoryStream, 0, memoryStream.Length, "fileUpload", fileName);
+                //string extension = convertion.GetFileExtension(base64Data);
+                //string fileName = $"{existingMenu.UpdatedAt}{extension}";
+                string extension = convertion.GetFileExtension(base64Data);
 
-                // Save image
-                _ = await FileService.WriteImageDocker(formFile, existingMenu.MenuId.ToString(), "menu");
+                // လက်ရှိအချိန် (yyyyMMddHHmmssfff) ပါဝင်သော ဖိုင်အမည်သတ်မှတ်ခြင်း
+                string timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmssfff");
+                string fileName = $"{existingMenu.MenuId}_{timestamp}{extension}";
 
-                // Set new image path
+                existingMenu.MenuImage = $"images/menu/{fileName}";
+
+                byte[] imageBytes = Convert.FromBase64String(base64Data);
+                using (MemoryStream memoryStream = new(imageBytes))
+                {
+                    memoryStream.Position = 0;
+                    IFormFile formFile = new FormFile(memoryStream, 0, imageBytes.Length, "fileUpload", fileName)
+                    {
+                        Headers = new HeaderDictionary(),
+                        ContentType = $"image/{extension.TrimStart('.')}"
+                    };
+
+                    bool imageSavedResult = await FileService.WriteImageDocker(formFile, $"{existingMenu.MenuId}_{timestamp}", "menu");
+                    if (!imageSavedResult)
+                    {
+                        return BadRequest(new DefaultResponseModel()
+                        {
+                            Success = false,
+                            Statuscode = StatusCodes.Status400BadRequest,
+                            Message = "Failed to save menu image.",
+                            Data = null
+                        });
+                    }
+                }
+
                 existingMenu.MenuImage = $"images/menu/{fileName}";
             }
-            else
-            {
-                // retain existing image
-                existingMenu.MenuImage = existingMenu.MenuImage;
-            }
 
-            //context.Attach(categorydto).State = EntityState.Modified;
-            bool isSaved = await context.SaveChangesAsync() > 0;
-
-            if (isSaved)
+            try
             {
+                await context.SaveChangesAsync();
+
                 var responseData = new ResponseDtos.AllMenu
                 {
                     Id = existingMenu.MenuId,
                     MenuName = existingMenu.MenuName,
-                    MenuImage= existingMenu.MenuImage,
-                    Price=existingMenu.Price,
-                    Description= existingMenu.Description,
-                    CategoryId=existingMenu.CategoryId,
-
+                    MenuImage = existingMenu.MenuImage,
+                    Price = existingMenu.Price,
+                    Description = existingMenu.Description,
+                    CategoryId = existingMenu.CategoryId,
+                    IsSpecial = existingMenu.IsSpecial,
+                    Archived = existingMenu.Archived
                 };
+
                 return Ok(new DefaultResponseModel()
                 {
                     Success = true,
-                    Statuscode = StatusCodes.Status201Created,
+                    Statuscode = StatusCodes.Status200OK,
                     Message = "Menu updated successfully",
                     Data = responseData
                 });
             }
-            else
+            catch (Exception ex)
             {
                 return BadRequest(new DefaultResponseModel()
                 {
                     Success = false,
                     Statuscode = StatusCodes.Status400BadRequest,
-                    Message = "Menu updated failed",
+                    Message = $"Menu update failed: {ex.Message}",
                     Data = null
                 });
             }
-
         }
+        //[Authorize(Roles = "Admin")]
+        //[HttpPut("{id}")]
+        //[EndpointSummary("Update Menu Data")]
+        //public async Task<IActionResult> UpdateMenu(int id, RequestDtos.RequestMenu menuDto)
+        //{
+        //    Menu? existingMenu = await context.Menus.FirstOrDefaultAsync(c => c.MenuId == id);
+        //    if (existingMenu == null)
+        //    {
+        //        return NotFound(new DefaultResponseModel()
+        //        {
+        //            Success = false,
+        //            Statuscode = StatusCodes.Status404NotFound,
+        //            Message = "Data doesn't exist",
+        //            Data = null
+        //        });
+        //    }
+
+        //    existingMenu.MenuName = menuDto.MenuName;
+        //    existingMenu.Price = menuDto.Price;
+        //    existingMenu.CategoryId = menuDto.CategoryId;
+        //    existingMenu.Description = menuDto.Description;
+        //    existingMenu.UpdatedAt = DateTime.UtcNow;
+        //    existingMenu.IsAvailable = true;
+
+            
+        //    if(!string.IsNullOrEmpty(menuDto.MenuImage) && !menuDto.MenuImage.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+        //    {
+        //        string extension = convertion.GetFileExtension(menuDto.MenuImage);
+        //        string fileName = $"{existingMenu.MenuId}{extension}";
+        //        byte[] imageBytes = Convert.FromBase64String(menuDto.MenuImage);
+        //        using MemoryStream memoryStream = new(imageBytes);
+        //        IFormFile formFile = new FormFile(memoryStream, 0, memoryStream.Length, "fileUpload", fileName);
+        //        _ = await FileService.WriteImageDocker(formFile, existingMenu.MenuId.ToString(), "menu");
+        //        existingMenu.MenuImage = $"images/menu/{fileName}";
+
+        //    }
+        //    else
+        //    {
+        //        existingMenu.MenuImage = existingMenu.MenuImage;
+        //    }
+          
+        //   bool isSaved= await context.SaveChangesAsync()>0;
+        //    if (isSaved)
+        //    {
+        //        var responseData = new ResponseDtos.AllMenu
+        //        {
+        //            Id = existingMenu.MenuId,
+        //            MenuName = existingMenu.MenuName,
+        //            MenuImage = existingMenu.MenuImage,
+        //            Price = existingMenu.Price,
+        //            Description = existingMenu.Description,
+        //            CategoryId = existingMenu.CategoryId,
+        //            IsSpecial = existingMenu.IsSpecial,
+        //            Archived = existingMenu.Archived
+        //        };
+
+        //        return Ok(new DefaultResponseModel()
+        //        {
+        //            Success = true,
+        //            Statuscode = StatusCodes.Status200OK, // HTTP 200 OK for Update
+        //            Message = "Menu updated successfully",
+        //            Data = responseData
+        //        });
+        //    }
+        //    else
+        //    {
+        //        return BadRequest(new DefaultResponseModel()
+        //        {
+        //            Success = false,
+        //            Statuscode = StatusCodes.Status400BadRequest,
+        //            Message = "menu updated failed",
+        //            Data = null
+        //        });
+        //    }
+        //}
+
         [Authorize(Roles = "Admin,KitchenStaff")]
         [HttpPut("{menuId}/Available")]
         [EndpointSummary("Change Menu Status")]
@@ -639,6 +889,82 @@ namespace SmartCafe.Controllers
                 });
             }
         }
+        [Authorize(Roles = "Admin,KitchenStaff")]
+        [HttpPut("{menuId}/IsSpecial")]
+        [EndpointSummary("Change Menu Special Status")]
+        public async Task<IActionResult> ChangeSpeial(int menuId)
+        {
+            var menuData = await context.Menus.FirstOrDefaultAsync(m => m.MenuId == menuId);
+            if (menuData == null)
+            {
+                return BadRequest(new DefaultResponseModel()
+                { 
+                    Success = false,
+                    Statuscode = StatusCodes.Status400BadRequest,
+                    Message = "Data not exist",
+                    Data = null
+                });
+            }
+            else
+            {
+                menuData.IsSpecial = !menuData.IsSpecial;
+                context.Menus.Update(menuData);
+                await context.SaveChangesAsync();
+                await hubContext.Clients.All.SendAsync("ReceiveMenuSpecial", new
+                {
+                    menuId = menuData.MenuId,
+                    isSpecial=menuData.IsSpecial,
+                    action = "status_change"
+                });
+
+                return Ok(new DefaultResponseModel()
+                {
+                    Success = true,
+                    Statuscode = StatusCodes.Status200OK,
+                    Message = "Menu data status is changed",
+                    Data = menuData
+                });
+            }
+        }
+
+        [Authorize(Roles = "Admin,KitchenStaff")]
+        [HttpPut("{menuId}/Archived")]
+        [EndpointSummary("Change Menu Archived Status")]
+        public async Task<IActionResult> ChangeArchived(int menuId)
+        {
+            var menuData = await context.Menus.FirstOrDefaultAsync(m => m.MenuId == menuId);
+            if (menuData == null)
+            {
+                return BadRequest(new DefaultResponseModel()
+                {
+                    Success = false,
+                    Statuscode = StatusCodes.Status400BadRequest,
+                    Message = "Data not exist",
+                    Data = null
+                });
+            }
+            else
+            {
+                menuData.Archived = !menuData.Archived;
+                context.Menus.Update(menuData);
+                await context.SaveChangesAsync();
+                await hubContext.Clients.All.SendAsync("RecevieMenuArchived", new
+                {
+                    menuId = menuData.MenuId,
+                    archived = menuData.Archived,
+                    action = "status_change"
+                });
+
+                return Ok(new DefaultResponseModel()
+                {
+                    Success = true,
+                    Statuscode = StatusCodes.Status200OK,
+                    Message = "Menu data status is changed",
+                    Data = menuData
+                });
+            }
+        }
+
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}/Restore")]
         [EndpointSummary("Restore Deleted Data")]

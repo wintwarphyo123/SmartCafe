@@ -5,6 +5,7 @@ using SmartCafe.Data;
 using SmartCafe.DTOs;
 using SmartCafe.Entities;
 using SmartCafe.Models;
+using SmartCafe.Services;
 
 namespace SmartCafe.Controllers
 {
@@ -148,6 +149,91 @@ namespace SmartCafe.Controllers
                 }
             }
         }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("import-optionGroups")]
+        [EndpointSummary("Import option groups from Excel file")]
+        public async Task<IActionResult> ImportOptionGroup(
+     IFormFile file,
+     [FromServices] ImportService importService)
+        {
+            // 1. File Validation
+            if (file == null || file.Length == 0)
+                return BadRequest("Please upload a valid Excel file.");
+
+            if (!file.FileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
+                return BadRequest("Only .xlsx files are allowed.");
+
+            using var stream = file.OpenReadStream();
+
+            // 2. Excel Header to Model Property Mapping
+            var mappings = new KeyValuePair<string, string>[]
+            {
+        new("Option Group Name", nameof(OptionGroup.GroupName)),
+        new("GroupName", nameof(OptionGroup.GroupName))
+            };
+
+            // 3. Parse Excel Stream
+            List<OptionGroup> importedOptionGroups = importService.ImportFromExcelStream<OptionGroup>(stream, mappings);
+
+            if (!importedOptionGroups.Any())
+            {
+                return BadRequest("No valid data found in the uploaded file.");
+            }
+
+            // 4. DB ထဲတွင် ရှိပြီးသား Group Name များကို HashSet ဖြင့် ဆွဲထုတ်ခြင်း
+            var existingNames = (await context.OptionGroups
+                .Where(g => !string.IsNullOrEmpty(g.GroupName))
+                .Select(g => g.GroupName.Trim().ToLower())
+                .ToListAsync())
+                .ToHashSet();
+
+            var uniqueNewGroups = new List<OptionGroup>();
+            var processedNamesInFile = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            // 5. DB ရော Excel ထဲတွင်ပါ ထပ်နေသော Duplicate များကို Filter ပြုလုပ်ခြင်း
+            foreach (var item in importedOptionGroups)
+            {
+                if (string.IsNullOrWhiteSpace(item.GroupName)) continue;
+
+                string cleanName = item.GroupName.Trim();
+                string lookupName = cleanName.ToLower();
+
+                if (!existingNames.Contains(lookupName) && !processedNamesInFile.Contains(lookupName))
+                {
+                    item.GroupName = cleanName;
+                    item.CreatedAt = DateTime.UtcNow;
+                    item.Status = true;
+
+                    uniqueNewGroups.Add(item);
+                    processedNamesInFile.Add(lookupName);
+                }
+            }
+
+            // 6. Data အားလုံး Duplicate ဖြစ်နေပါက Skip မည်
+            if (!uniqueNewGroups.Any())
+            {
+                return Ok(new
+                {
+                    Success = true,
+                    Message = "All option groups from the file already exist in the database or are duplicates. Nothing imported."
+                });
+            }
+
+            // 7. Distinct/Unique Record များကိုသာ Bulk Insert ပြုလုပ်မည်
+            await context.OptionGroups.AddRangeAsync(uniqueNewGroups);
+            await context.SaveChangesAsync();
+
+            int skippedCount = importedOptionGroups.Count - uniqueNewGroups.Count;
+
+            return Ok(new
+            {
+                Success = true,
+                Message = $"Successfully imported {uniqueNewGroups.Count} option group(s)." +
+                          (skippedCount > 0 ? $" ({skippedCount} duplicate(s) skipped)." : "")
+            });
+        }
+
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         [EndpointSummary("Update option group")]

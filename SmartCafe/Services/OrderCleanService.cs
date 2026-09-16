@@ -3,7 +3,7 @@ using SmartCafe.Data;
 
 namespace SmartCafe.Services
 {
-    public class OrderCleanService: BackgroundService
+    public class OrderCleanService : BackgroundService
     {
         private readonly IServiceProvider _serviceProvider;
 
@@ -11,43 +11,56 @@ namespace SmartCafe.Services
         {
             _serviceProvider = serviceProvider;
         }
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            // ညသန်းခေါင်အချိန် ရောက်မရောက်ကို ၁ နာရီတစ်ခါ နောက်ကွယ်ကနေ စစ်ပေးမယ့် Timer
-            using PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromHours(1));
+            // 💡 1. App တက်တက်ချင်း တန်းအလုပ်လုပ်ရန် CleanExpiredOrders ကို ပထမဆုံးအကြိမ် တိုက်ရိုက် ခေါ်ယူပါသည်
+            await CleanExpiredOrdersAsync(stoppingToken);
+
+            // 💡 2. ထို့နောက်မှ ၁ နာရီလျှင် တစ်ကြိမ် ပုံမှန် စစ်ဆေးပေးပါမည်
+            using PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
 
             while (!stoppingToken.IsCancellationRequested && await timer.WaitForNextTickAsync(stoppingToken))
             {
-                try
+                await CleanExpiredOrdersAsync(stoppingToken);
+            }
+        }
+
+        private async Task CleanExpiredOrdersAsync(CancellationToken stoppingToken)
+        {
+            try
+            {
+                using var scope = _serviceProvider.CreateScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<SmartCafeDbContext>();
+
+                var todayStart = DateTime.Today;
+
+                // မနေ့ကအထိ အော်ဒါအဟောင်းများထဲမှ Ready သို့မဟုတ် Cancelled မဟုတ်သော အော်ဒါများကို ရှာပါမည်
+                var expiredOrders = await dbContext.Orders
+                    .Include(o => o.OrderItems) // 💡 Foreign Key Error မတက်အောင် OrderItems များကိုပါ ပူးတွဲ Fetch လုပ်ပါသည်
+                    .Where(o => o.CreatedAt < todayStart &&
+                                o.OrderStatus != "Ready" &&
+                                o.OrderStatus != "Cancelled")
+                    .ToListAsync(stoppingToken);
+
+                if (expiredOrders.Any())
                 {
-                    using (var scope = _serviceProvider.CreateScope())
+                    // Foreign Key ကြောင့် Error မတက်စေရန် OrderItems များကိုပါ ရောပြီး ဖျက်ပေးပါသည်
+                    var expiredOrderItems = expiredOrders.SelectMany(o => o.OrderItems).ToList();
+                    if (expiredOrderItems.Any())
                     {
-                        // သင့်ရဲ့ Database Context ကို Scope ထဲကနေ ဆွဲယူပါတယ်
-                        var dbContext = scope.ServiceProvider.GetRequiredService<SmartCafeDbContext>();
-
-                        // ဒီနေ့ ရက်စွဲရဲ့ အစ (ဥပမာ - 12/07/2026 00:00:00)
-                        var todayStart = DateTime.Today;
-
-                        // မနေ့ကအထိ မှာထားပြီး "Ready" သို့မဟုတ် "Cancelled" မဖြစ်သေးတဲ့ အော်ဒါတွေကို ရှာပါတယ်
-                        var expiredOrders = await dbContext.Orders
-                            .Where(o => o.CreatedAt < todayStart &&
-                                        o.OrderStatus != "Ready" &&
-                                        o.OrderStatus != "Cancelled")
-                            .ToListAsync(stoppingToken);
-
-                        if (expiredOrders.Any())
-                        {       
-                                dbContext.Orders.RemoveRange(expiredOrders);
-                                await dbContext.SaveChangesAsync(stoppingToken);
-                                Console.WriteLine($"[SmartCafe] Successfully permanent deleted {expiredOrders.Count} expired orders from yesterday.");
-                        }
+                        dbContext.OrderItems.RemoveRange(expiredOrderItems);
                     }
+
+                    dbContext.Orders.RemoveRange(expiredOrders);
+                    await dbContext.SaveChangesAsync(stoppingToken);
+
+                    Console.WriteLine($"[SmartCafe] Successfully permanently deleted {expiredOrders.Count} expired orders from database.");
                 }
-                catch (Exception ex)
-                {
-                    // Error တက်ရင် ဘာလို့တက်လဲ သိအောင် Log မှတ်ထားဖို့ပါ
-                    Console.WriteLine($"Error cleaning expired orders: {ex.Message}");
-                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[SmartCafe Error] Cleaning expired orders failed: {ex.Message}");
             }
         }
     }

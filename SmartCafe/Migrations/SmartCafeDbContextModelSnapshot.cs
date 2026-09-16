@@ -22,6 +22,199 @@ namespace SmartCafe.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("AspNetUserRole", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("RoleId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex(new[] { "RoleId" }, "IX_AspNetUserRoles_RoleId");
+
+                    b.ToTable("AspNetUserRoles", (string)null);
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.AspNetRole", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex(new[] { "NormalizedName" }, "RoleNameIndex")
+                        .IsUnique()
+                        .HasFilter("([NormalizedName] IS NOT NULL)");
+
+                    b.ToTable("AspNetRoles");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.AspNetRoleClaim", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex(new[] { "RoleId" }, "IX_AspNetRoleClaims_RoleId");
+
+                    b.ToTable("AspNetRoleClaims");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.AspNetUser", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex(new[] { "NormalizedEmail" }, "EmailIndex");
+
+                    b.HasIndex(new[] { "NormalizedUserName" }, "UserNameIndex")
+                        .IsUnique()
+                        .HasFilter("([NormalizedUserName] IS NOT NULL)");
+
+                    b.ToTable("AspNetUsers");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.AspNetUserClaim", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex(new[] { "UserId" }, "IX_AspNetUserClaims_UserId");
+
+                    b.ToTable("AspNetUserClaims");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.AspNetUserLogin", b =>
+                {
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("LoginProvider", "ProviderKey");
+
+                    b.HasIndex(new[] { "UserId" }, "IX_AspNetUserLogins_UserId");
+
+                    b.ToTable("AspNetUserLogins");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.AspNetUserToken", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("UserId", "LoginProvider", "Name");
+
+                    b.ToTable("AspNetUserTokens");
+                });
+
             modelBuilder.Entity("SmartCafe.Entities.Category", b =>
                 {
                     b.Property<int>("CategoryId")
@@ -31,9 +224,8 @@ namespace SmartCafe.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CategoryId"));
 
                     b.Property<string>("CategoryImage")
-                        .HasMaxLength(100)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(100)");
+                        .HasColumnType("varchar(max)");
 
                     b.Property<string>("CategoryName")
                         .HasMaxLength(100)
@@ -46,6 +238,12 @@ namespace SmartCafe.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime");
 
+                    b.Property<bool?>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasColumnName("Is_active")
+                        .HasDefaultValue(true, "DF_Categories_is_active");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime");
 
@@ -53,6 +251,595 @@ namespace SmartCafe.Migrations
                         .HasName("PK__Categori__19093A0B897F4596");
 
                     b.ToTable("Categories");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.Menu", b =>
+                {
+                    b.Property<int>("MenuId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MenuId"));
+
+                    b.Property<int?>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("DeletedAT");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool?>("IsAvailable")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasColumnName("Is_available")
+                        .HasDefaultValue(true, "DF__Menu__Is_availab__49C3F6B7");
+
+                    b.Property<string>("MenuImage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MenuName")
+                        .HasMaxLength(150)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<decimal?>("Price")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("UpdatedAT");
+
+                    b.HasKey("MenuId")
+                        .HasName("PK__Menu__C99ED23080F57FA2");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("Menu");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.MenuDisabledOption", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("(getdate())");
+
+                    b.Property<int>("MenuId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OptionItemId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id")
+                        .HasName("PK__MenuDisa__3214EC07624BA940");
+
+                    b.HasIndex("MenuId");
+
+                    b.HasIndex("OptionItemId");
+
+                    b.ToTable("MenuDisabledOptions");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.OptionGroup", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("GroupName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<bool?>("Status")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.HasKey("Id")
+                        .HasName("PK__Option_G__3214EC07A11740E4");
+
+                    b.ToTable("Option_Groups");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.OptionItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<decimal>("ExtraPrice")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<string>("ItemName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<int>("OptionGroupId")
+                        .HasColumnType("int");
+
+                    b.Property<bool?>("Status")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.HasKey("Id")
+                        .HasName("PK__Option_I__3214EC07D056B0CC");
+
+                    b.HasIndex("OptionGroupId");
+
+                    b.ToTable("Option_Items");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.Order", b =>
+                {
+                    b.Property<int>("OrderId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("(getdate())", "DF__Orders__CreatedA__72C60C4A");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("OrderNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("OrderStatus")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(20)")
+                        .HasDefaultValue("Pending", "DF__Orders__OrderSta__71D1E811");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.HasKey("OrderId")
+                        .HasName("PK__Orders__C3905BCFF0574BA3");
+
+                    b.HasIndex(new[] { "OrderNumber" }, "UQ__Orders__CAC5E7437C397EBD")
+                        .IsUnique();
+
+                    b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.OrderItem", b =>
+                {
+                    b.Property<int>("OrderItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderItemId"));
+
+                    b.Property<int>("MenuId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("PriceAtOrder")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<int>("Quantity")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
+                    b.Property<string>("SelectedOptionsJson")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.HasKey("OrderItemId")
+                        .HasName("PK__OrderIte__57ED0681E8A8FD42");
+
+                    b.HasIndex("MenuId");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("OrderItems");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.ProductOptionGroup", b =>
+                {
+                    b.Property<int>("MenuId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OptionGroupId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.HasKey("MenuId", "OptionGroupId")
+                        .HasName("PK__Product___68CBA0AC942A08EE");
+
+                    b.HasIndex("OptionGroupId");
+
+                    b.ToTable("Product_Option_Groups");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RefreshTokens");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.UserInfo", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("userId");
+
+                    b.Property<DateOnly?>("JoinDate")
+                        .HasColumnType("date")
+                        .HasColumnName("joinDate");
+
+                    b.Property<string>("ProfileImage")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("profileImage");
+
+                    b.Property<string>("Role")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("role");
+
+                    b.Property<bool?>("Status")
+                        .HasColumnType("bit")
+                        .HasColumnName("status");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("userName");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("UserInfos");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.ViewKioskMenuList", b =>
+                {
+                    b.Property<int?>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CategoryName")
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<bool?>("IsAvailable")
+                        .HasColumnType("bit")
+                        .HasColumnName("isAvailable");
+
+                    b.Property<string>("MenuImage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MenuName")
+                        .HasMaxLength(150)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<decimal?>("Price")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("View_KioskMenuList", (string)null);
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.ViewMenuDetailOption", b =>
+                {
+                    b.Property<decimal?>("ExtraPrice")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<int?>("GroupId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("GroupName")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<bool?>("IsAvailable")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ItemName")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("MenuDescription")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("MenuId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MenuName")
+                        .HasMaxLength(150)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(150)");
+
+                    b.Property<decimal?>("MenuPrice")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("View_MenuDetailOptions", (string)null);
+                });
+
+            modelBuilder.Entity("AspNetUserRole", b =>
+                {
+                    b.HasOne("SmartCafe.Entities.AspNetRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SmartCafe.Entities.AspNetUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.AspNetRoleClaim", b =>
+                {
+                    b.HasOne("SmartCafe.Entities.AspNetRole", "Role")
+                        .WithMany("AspNetRoleClaims")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.AspNetUserClaim", b =>
+                {
+                    b.HasOne("SmartCafe.Entities.AspNetUser", "User")
+                        .WithMany("AspNetUserClaims")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.AspNetUserLogin", b =>
+                {
+                    b.HasOne("SmartCafe.Entities.AspNetUser", "User")
+                        .WithMany("AspNetUserLogins")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.AspNetUserToken", b =>
+                {
+                    b.HasOne("SmartCafe.Entities.AspNetUser", "User")
+                        .WithMany("AspNetUserTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.Menu", b =>
+                {
+                    b.HasOne("SmartCafe.Entities.Category", "Category")
+                        .WithMany("Menus")
+                        .HasForeignKey("CategoryId")
+                        .HasConstraintName("fk_Menus_Categories");
+
+                    b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.MenuDisabledOption", b =>
+                {
+                    b.HasOne("SmartCafe.Entities.Menu", "Menu")
+                        .WithMany("MenuDisabledOptions")
+                        .HasForeignKey("MenuId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_MenuDisabledOptions_Menus");
+
+                    b.HasOne("SmartCafe.Entities.OptionItem", "OptionItem")
+                        .WithMany("MenuDisabledOptions")
+                        .HasForeignKey("OptionItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_MenuDisabledOptions_OptionItems");
+
+                    b.Navigation("Menu");
+
+                    b.Navigation("OptionItem");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.OptionItem", b =>
+                {
+                    b.HasOne("SmartCafe.Entities.OptionGroup", "OptionGroup")
+                        .WithMany("OptionItems")
+                        .HasForeignKey("OptionGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK__Option_It__Optio__6383C8BA");
+
+                    b.Navigation("OptionGroup");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.OrderItem", b =>
+                {
+                    b.HasOne("SmartCafe.Entities.Menu", "Menu")
+                        .WithMany("OrderItems")
+                        .HasForeignKey("MenuId")
+                        .IsRequired()
+                        .HasConstraintName("FK_OrderItems_Menu");
+
+                    b.HasOne("SmartCafe.Entities.Order", "Order")
+                        .WithMany("OrderItems")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_OrderItems_Orders");
+
+                    b.Navigation("Menu");
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.ProductOptionGroup", b =>
+                {
+                    b.HasOne("SmartCafe.Entities.Menu", "Menu")
+                        .WithMany("ProductOptionGroups")
+                        .HasForeignKey("MenuId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK__Product_O__MenuI__6754599E");
+
+                    b.HasOne("SmartCafe.Entities.OptionGroup", "OptionGroup")
+                        .WithMany("ProductOptionGroups")
+                        .HasForeignKey("OptionGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK__Product_O__Optio__68487DD7");
+
+                    b.Navigation("Menu");
+
+                    b.Navigation("OptionGroup");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.AspNetRole", b =>
+                {
+                    b.Navigation("AspNetRoleClaims");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.AspNetUser", b =>
+                {
+                    b.Navigation("AspNetUserClaims");
+
+                    b.Navigation("AspNetUserLogins");
+
+                    b.Navigation("AspNetUserTokens");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.Category", b =>
+                {
+                    b.Navigation("Menus");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.Menu", b =>
+                {
+                    b.Navigation("MenuDisabledOptions");
+
+                    b.Navigation("OrderItems");
+
+                    b.Navigation("ProductOptionGroups");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.OptionGroup", b =>
+                {
+                    b.Navigation("OptionItems");
+
+                    b.Navigation("ProductOptionGroups");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.OptionItem", b =>
+                {
+                    b.Navigation("MenuDisabledOptions");
+                });
+
+            modelBuilder.Entity("SmartCafe.Entities.Order", b =>
+                {
+                    b.Navigation("OrderItems");
                 });
 #pragma warning restore 612, 618
         }

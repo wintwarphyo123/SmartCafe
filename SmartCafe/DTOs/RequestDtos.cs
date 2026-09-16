@@ -1,4 +1,4 @@
-﻿using SmartCafe.Entities;
+using SmartCafe.Entities;
 using SmartCafe.Models;
 using System.ComponentModel.DataAnnotations;
 
@@ -22,8 +22,9 @@ namespace SmartCafe.DTOs
             public bool? Is_available { get; set; }
             public decimal Price {  get; set; } = 0;
             public int CategoryId { get; set; }
-        
-            
+            public bool? IsSpecial { get; set; }
+            public bool? Archived { get; set; }
+
         }
         public class RequestOptionGroup()
         {
@@ -66,6 +67,13 @@ namespace SmartCafe.DTOs
         {
             public int OrderId {  set; get; } = 0;
             public string TransitionId { set; get; } = null!;//store in note 
+        }
+
+        // Sent by client when the access token expires
+        public class RefreshTokenRequest()
+        {
+            public string AccessToken { get; set; } = null!;   // the EXPIRED access token
+            public string RefreshToken { get; set; } = null!;  // the still-valid refresh token
         }
     }
 }

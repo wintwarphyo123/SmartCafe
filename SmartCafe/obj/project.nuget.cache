@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "7mlH+qo4nlk=",
+  "dgSpecHash": "leZLdygI0kI=",
   "success": true,
-  "projectFilePath": "C:\\Users\\acer\\source\\repos\\SmartCafe\\SmartCafe\\SmartCafe.csproj",
+  "projectFilePath": "C:\\Users\\acer\\Desktop\\C#\\SmartCafe\\SmartCafe\\SmartCafe.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\acer\\.nuget\\packages\\azure.core\\1.47.1\\azure.core.1.47.1.nupkg.sha512",
     "C:\\Users\\acer\\.nuget\\packages\\azure.identity\\1.14.2\\azure.identity.1.14.2.nupkg.sha512",
@@ -12,7 +12,7 @@
     "C:\\Users\\acer\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\10.0.9\\microsoft.aspnetcore.authentication.jwtbearer.10.0.9.nupkg.sha512",
     "C:\\Users\\acer\\.nuget\\packages\\microsoft.aspnetcore.identity.entityframeworkcore\\10.0.8\\microsoft.aspnetcore.identity.entityframeworkcore.10.0.8.nupkg.sha512",
     "C:\\Users\\acer\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.7\\microsoft.aspnetcore.openapi.10.0.7.nupkg.sha512",
-    "C:\\Users\\acer\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\8.0.0\\microsoft.bcl.asyncinterfaces.8.0.0.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\9.0.4\\microsoft.bcl.asyncinterfaces.9.0.4.nupkg.sha512",
     "C:\\Users\\acer\\.nuget\\packages\\microsoft.bcl.cryptography\\9.0.4\\microsoft.bcl.cryptography.9.0.4.nupkg.sha512",
     "C:\\Users\\acer\\.nuget\\packages\\microsoft.build.framework\\18.0.2\\microsoft.build.framework.18.0.2.nupkg.sha512",
     "C:\\Users\\acer\\.nuget\\packages\\microsoft.codeanalysis.analyzers\\3.11.0\\microsoft.codeanalysis.analyzers.3.11.0.nupkg.sha512",
@@ -40,6 +40,10 @@
     "C:\\Users\\acer\\.nuget\\packages\\microsoft.identitymodel.protocols.openidconnect\\8.0.1\\microsoft.identitymodel.protocols.openidconnect.8.0.1.nupkg.sha512",
     "C:\\Users\\acer\\.nuget\\packages\\microsoft.identitymodel.tokens\\8.0.1\\microsoft.identitymodel.tokens.8.0.1.nupkg.sha512",
     "C:\\Users\\acer\\.nuget\\packages\\microsoft.io.recyclablememorystream\\3.0.1\\microsoft.io.recyclablememorystream.3.0.1.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\microsoft.ml\\5.0.0\\microsoft.ml.5.0.0.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\microsoft.ml.cpumath\\5.0.0\\microsoft.ml.cpumath.5.0.0.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\microsoft.ml.dataview\\5.0.0\\microsoft.ml.dataview.5.0.0.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\microsoft.ml.recommender\\0.23.0\\microsoft.ml.recommender.0.23.0.nupkg.sha512",
     "C:\\Users\\acer\\.nuget\\packages\\microsoft.openapi\\2.0.0\\microsoft.openapi.2.0.0.nupkg.sha512",
     "C:\\Users\\acer\\.nuget\\packages\\microsoft.sqlserver.server\\1.0.0\\microsoft.sqlserver.server.1.0.0.nupkg.sha512",
     "C:\\Users\\acer\\.nuget\\packages\\microsoft.visualstudio.solutionpersistence\\1.0.52\\microsoft.visualstudio.solutionpersistence.1.0.52.nupkg.sha512",
@@ -48,7 +52,7 @@
     "C:\\Users\\acer\\.nuget\\packages\\scalar.aspnetcore\\2.14.14\\scalar.aspnetcore.2.14.14.nupkg.sha512",
     "C:\\Users\\acer\\.nuget\\packages\\sixlabors.imagesharp\\2.1.13\\sixlabors.imagesharp.2.1.13.nupkg.sha512",
     "C:\\Users\\acer\\.nuget\\packages\\system.clientmodel\\1.5.1\\system.clientmodel.1.5.1.nupkg.sha512",
-    "C:\\Users\\acer\\.nuget\\packages\\system.codedom\\6.0.0\\system.codedom.6.0.0.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\system.codedom\\9.0.4\\system.codedom.9.0.4.nupkg.sha512",
     "C:\\Users\\acer\\.nuget\\packages\\system.componentmodel.annotations\\5.0.0\\system.componentmodel.annotations.5.0.0.nupkg.sha512",
     "C:\\Users\\acer\\.nuget\\packages\\system.composition\\9.0.0\\system.composition.9.0.0.nupkg.sha512",
     "C:\\Users\\acer\\.nuget\\packages\\system.composition.attributedmodel\\9.0.0\\system.composition.attributedmodel.9.0.0.nupkg.sha512",
@@ -60,21 +64,19 @@
     "C:\\Users\\acer\\.nuget\\packages\\system.identitymodel.tokens.jwt\\8.0.1\\system.identitymodel.tokens.jwt.8.0.1.nupkg.sha512",
     "C:\\Users\\acer\\.nuget\\packages\\system.linq.dynamic.core\\1.7.2\\system.linq.dynamic.core.1.7.2.nupkg.sha512",
     "C:\\Users\\acer\\.nuget\\packages\\system.memory.data\\8.0.1\\system.memory.data.8.0.1.nupkg.sha512",
+    "C:\\Users\\acer\\.nuget\\packages\\system.numerics.tensors\\9.0.4\\system.numerics.tensors.9.0.4.nupkg.sha512",
     "C:\\Users\\acer\\.nuget\\packages\\system.security.cryptography.pkcs\\10.0.7\\system.security.cryptography.pkcs.10.0.7.nupkg.sha512",
     "C:\\Users\\acer\\.nuget\\packages\\system.security.cryptography.protecteddata\\9.0.4\\system.security.cryptography.protecteddata.9.0.4.nupkg.sha512"
   ],
   "logs": [
     {
-      "code": "NU1903",
+      "code": "NU1900",
       "level": "Warning",
-      "message": "Package 'Microsoft.OpenApi' 2.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-v5pm-xwqc-g5wc",
-      "projectPath": "C:\\Users\\acer\\source\\repos\\SmartCafe\\SmartCafe\\SmartCafe.csproj",
+      "message": "Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.",
+      "projectPath": "C:\\Users\\acer\\Desktop\\C#\\SmartCafe\\SmartCafe\\SmartCafe.csproj",
       "warningLevel": 1,
-      "filePath": "C:\\Users\\acer\\source\\repos\\SmartCafe\\SmartCafe\\SmartCafe.csproj",
-      "libraryId": "Microsoft.OpenApi",
-      "targetGraphs": [
-        "net10.0"
-      ]
+      "filePath": "C:\\Users\\acer\\Desktop\\C#\\SmartCafe\\SmartCafe\\SmartCafe.csproj",
+      "targetGraphs": []
     }
   ]
 }

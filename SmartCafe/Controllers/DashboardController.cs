@@ -22,9 +22,9 @@ namespace SmartCafe.Controllers
                 var today = DateTime.Today;
                 var menuCount =await context.Menus.CountAsync(m => m.IsAvailable == true && m.DeletedAt==null);
                 var categoryCount = await context.Categories.CountAsync(c => c.IsActive == true && c.DeletedAt==null);
-                var orderCount = await context.Orders.CountAsync(o=> o.Note != null && o.CreatedAt >= today);
+                var orderCount = await context.Orders.CountAsync(o=> o.CreatedAt >= today);
                 var dailyRevenue = await context.Orders
-                    .Where(o => o.Note != null && o.CreatedAt >= today)
+                    .Where(o => o.CreatedAt >= today)
                     .SumAsync(o => o.TotalAmount);
                 var userCount =await context.UserInfos.CountAsync(u => u.Role == "Staff");
 

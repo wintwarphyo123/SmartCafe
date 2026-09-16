@@ -30,6 +30,8 @@ public partial class SmartCafeDbContext : DbContext
 
     public virtual DbSet<MenuDisabledOption> MenuDisabledOptions { get; set; }
 
+    public virtual DbSet<MenuRecommendation> MenuRecommendations { get; set; }
+
     public virtual DbSet<OptionGroup> OptionGroups { get; set; }
 
     public virtual DbSet<OptionItem> OptionItems { get; set; }
@@ -40,7 +42,13 @@ public partial class SmartCafeDbContext : DbContext
 
     public virtual DbSet<ProductOptionGroup> ProductOptionGroups { get; set; }
 
+    public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
+
     public virtual DbSet<UserInfo> UserInfos { get; set; }
+
+    public virtual DbSet<ViewKioskMenuList> ViewKioskMenuLists { get; set; }
+
+    public virtual DbSet<ViewMenuDetailOption> ViewMenuDetailOptions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -81,6 +89,7 @@ public partial class SmartCafeDbContext : DbContext
         {
             entity.HasKey(e => e.MenuId).HasName("PK__Menu__C99ED23080F57FA2");
 
+            entity.Property(e => e.Archived).HasDefaultValue(false, "DF_Menu_Archived");
             entity.Property(e => e.IsAvailable).HasDefaultValue(true, "DF__Menu__Is_availab__49C3F6B7");
 
             entity.HasOne(d => d.Category).WithMany(p => p.Menus).HasConstraintName("fk_Menus_Categories");
@@ -95,6 +104,21 @@ public partial class SmartCafeDbContext : DbContext
             entity.HasOne(d => d.Menu).WithMany(p => p.MenuDisabledOptions).HasConstraintName("FK_MenuDisabledOptions_Menus");
 
             entity.HasOne(d => d.OptionItem).WithMany(p => p.MenuDisabledOptions).HasConstraintName("FK_MenuDisabledOptions_OptionItems");
+        });
+
+        modelBuilder.Entity<MenuRecommendation>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__MenuReco__3214EC078D515ADA");
+
+            entity.Property(e => e.LastUpdated).HasDefaultValueSql("(getutcdate())");
+
+            entity.HasOne(d => d.MainMenu).WithMany(p => p.MenuRecommendationMainMenus)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MenuRecommendations_MainMenu");
+
+            entity.HasOne(d => d.RecommendedMenu).WithMany(p => p.MenuRecommendationRecommendedMenus)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MenuRecommendations_RecommendedMenu");
         });
 
         modelBuilder.Entity<OptionGroup>(entity =>
@@ -137,6 +161,25 @@ public partial class SmartCafeDbContext : DbContext
             entity.HasOne(d => d.Menu).WithMany(p => p.ProductOptionGroups).HasConstraintName("FK__Product_O__MenuI__6754599E");
 
             entity.HasOne(d => d.OptionGroup).WithMany(p => p.ProductOptionGroups).HasConstraintName("FK__Product_O__Optio__68487DD7");
+        });
+
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__RefreshT__3214EC077DD0EF35");
+
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getutcdate())");
+
+            entity.HasOne(d => d.User).WithMany(p => p.RefreshTokens).HasConstraintName("FK_RefreshTokens_AspNetUsers");
+        });
+
+        modelBuilder.Entity<ViewKioskMenuList>(entity =>
+        {
+            entity.ToView("View_KioskMenuList");
+        });
+
+        modelBuilder.Entity<ViewMenuDetailOption>(entity =>
+        {
+            entity.ToView("View_MenuDetailOptions");
         });
 
         OnModelCreatingPartial(modelBuilder);

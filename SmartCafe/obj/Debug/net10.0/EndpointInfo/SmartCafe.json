@@ -46,12 +46,78 @@
         }
       }
     },
+    "/api/Auth/refresh": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Refresh Access Token",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Auth/logout": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Logout — revoke refresh token",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Auth/profile": {
       "get": {
         "tags": [
           "Auth"
         ],
-        "summary": "get user profile",
+        "summary": "Get user profile",
         "responses": {
           "200": {
             "description": "OK"
@@ -206,6 +272,33 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Category/import-categories": {
+      "post": {
+        "tags": [
+          "Category"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "OK"
@@ -442,6 +535,32 @@
         }
       }
     },
+    "/api/Menu/Special": {
+      "get": {
+        "tags": [
+          "Menu"
+        ],
+        "summary": "Get Special Data",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Menu/IsSpecial": {
+      "get": {
+        "tags": [
+          "Menu"
+        ],
+        "summary": "Get Special Data for Admin",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Menu/{id}": {
       "get": {
         "tags": [
@@ -647,6 +766,60 @@
         }
       }
     },
+    "/api/Menu/Recommend/{menuId}": {
+      "get": {
+        "tags": [
+          "Menu"
+        ],
+        "summary": "GetRecommendationMenu",
+        "parameters": [
+          {
+            "name": "menuId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ResponseRecommendation"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ResponseRecommendation"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ResponseRecommendation"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/Menu/link-option-group": {
       "post": {
         "tags": [
@@ -686,6 +859,62 @@
           "Menu"
         ],
         "summary": "Change Menu Status",
+        "parameters": [
+          {
+            "name": "menuId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Menu/{menuId}/IsSpecial": {
+      "put": {
+        "tags": [
+          "Menu"
+        ],
+        "summary": "Change Menu Special Status",
+        "parameters": [
+          {
+            "name": "menuId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Menu/{menuId}/Archived": {
+      "put": {
+        "tags": [
+          "Menu"
+        ],
+        "summary": "Change Menu Archived Status",
         "parameters": [
           {
             "name": "menuId",
@@ -786,6 +1015,34 @@
           "OptionGroup"
         ],
         "summary": "Get Deleted Data",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/OptionGroup/import-optionGroups": {
+      "post": {
+        "tags": [
+          "OptionGroup"
+        ],
+        "summary": "Import option groups from Excel file",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "OK"
@@ -1314,32 +1571,27 @@
         }
       }
     },
-    "/api/Order/confirmPayment": {
+    "/api/Order/{orderId}/paid": {
       "put": {
         "tags": [
           "Order"
         ],
-        "summary": "Confirm payment",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ConfirmPaymentRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ConfirmPaymentRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/ConfirmPaymentRequest"
-              }
+        "summary": "Paid Order",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
             }
-          },
-          "required": true
-        },
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -1576,22 +1828,6 @@
   },
   "components": {
     "schemas": {
-      "ConfirmPaymentRequest": {
-        "type": "object",
-        "properties": {
-          "orderId": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
-            "format": "int32"
-          },
-          "transitionId": {
-            "type": "string"
-          }
-        }
-      },
       "EntityTagHeaderValue": {
         "type": "object",
         "properties": {
@@ -1639,6 +1875,10 @@
             "type": "boolean"
           }
         }
+      },
+      "IFormFile": {
+        "type": "string",
+        "format": "binary"
       },
       "KeyValuePairOfstringAndstring": {
         "required": [
@@ -1731,6 +1971,17 @@
           }
         }
       },
+      "RefreshTokenRequest": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "refreshToken": {
+            "type": "string"
+          }
+        }
+      },
       "RequestCategory": {
         "type": "object",
         "properties": {
@@ -1780,6 +2031,18 @@
               "string"
             ],
             "format": "int32"
+          },
+          "isSpecial": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "archived": {
+            "type": [
+              "null",
+              "boolean"
+            ]
           }
         }
       },
@@ -1843,6 +2106,60 @@
               "string"
             ],
             "format": "int32"
+          }
+        }
+      },
+      "ResponseRecommendation": {
+        "type": "object",
+        "properties": {
+          "mainMenuId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "recommendedMenuId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "recommendedMenuName": {
+            "type": "string"
+          },
+          "recommendedMenuPrice": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "recommendedMenuImageUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "pairingCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "supportScore": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
           }
         }
       },
